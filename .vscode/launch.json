@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense para saber los atributos posibles.
+    // Mantenga el puntero para ver las descripciones de los existentes atributos.
+    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "gym_app",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "gym_app (Chrome)",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "chrome"]
+        },
+        {
+            "name": "gym_app (Windows)",
+            "request": "launch",
+            "type": "dart",
+            "args": ["-d", "windows"]
+        }
+    ]
+}
