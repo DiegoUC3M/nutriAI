@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
             _MenuCard(
               titulo: 'Ejercicios',
               icono: Icons.fitness_center,
-              color: Colors.deepPurple,
+              color: const Color.fromRGBO(103, 58, 183, 1),
               onTap: () {
                 // Navigator.push lleva al usuario a otra pantalla
                 Navigator.push(
