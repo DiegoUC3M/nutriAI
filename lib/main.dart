@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'theme/app_theme.dart';
+import 'widgets/main_shell.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,12 +12,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Gym App',
+      title: 'NutriAI',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const HomeScreen(),
+      theme: AppTheme.darkTheme,
+      home: const MainShell(),
     );
   }
 }
