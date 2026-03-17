@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/macro_calculator.dart';
 import 'steps/step_food_preferences.dart';
 import 'steps/step_macros_config.dart';
 import 'steps/step_days_selection.dart';
 import 'steps/step_diet_result.dart';
 
 class NutritionFlowScreen extends StatefulWidget {
-  const NutritionFlowScreen({super.key});
+  final ValueChanged<List<DietDay>?>? onDietChanged;
+
+  const NutritionFlowScreen({super.key, this.onDietChanged});
 
   @override
   State<NutritionFlowScreen> createState() => _NutritionFlowScreenState();
@@ -24,9 +27,9 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
   // Macros
   bool _autoMacros = true;
-  double _protein = 150;
-  double _carbs = 250;
-  double _fat = 70;
+  late double _protein;
+  late double _carbs;
+  late double _fat;
 
   // Auto macros data
   String _goal = 'maintain';
@@ -35,6 +38,39 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   double _weight = 70;
   double _height = 170;
   String _activityLevel = 'moderate';
+
+  @override
+  void initState() {
+    super.initState();
+    final result = MacroCalculator.calculate(
+      sex: _sex,
+      weightKg: _weight,
+      heightCm: _height,
+      age: _age,
+      activityLevel: _activityLevel,
+      goal: _goal,
+    );
+    _protein = result.protein;
+    _carbs = result.carbs;
+    _fat = result.fat;
+  }
+
+  void _recalculateAutoMacros() {
+    if (!_autoMacros) return;
+    final result = MacroCalculator.calculate(
+      sex: _sex,
+      weightKg: _weight,
+      heightCm: _height,
+      age: _age,
+      activityLevel: _activityLevel,
+      goal: _goal,
+    );
+    setState(() {
+      _protein = result.protein;
+      _carbs = result.carbs;
+      _fat = result.fat;
+    });
+  }
 
   // Días
   int _days = 7;
@@ -78,6 +114,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
         _dietResult = _buildMockDiet();
         _isGenerating = false;
       });
+      widget.onDietChanged?.call(_dietResult);
     });
   }
 
@@ -203,16 +240,41 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                   weight: _weight,
                   height: _height,
                   activityLevel: _activityLevel,
-                  onAutoMacrosChanged: (v) => setState(() => _autoMacros = v),
+                  onAutoMacrosChanged: (v) {
+                    _autoMacros = v;
+                    if (v) {
+                      _recalculateAutoMacros();
+                    } else {
+                      setState(() {});
+                    }
+                  },
                   onProteinChanged: (v) => setState(() => _protein = v),
                   onCarbsChanged: (v) => setState(() => _carbs = v),
                   onFatChanged: (v) => setState(() => _fat = v),
-                  onGoalChanged: (v) => setState(() => _goal = v),
-                  onSexChanged: (v) => setState(() => _sex = v),
-                  onAgeChanged: (v) => setState(() => _age = v),
-                  onWeightChanged: (v) => setState(() => _weight = v),
-                  onHeightChanged: (v) => setState(() => _height = v),
-                  onActivityChanged: (v) => setState(() => _activityLevel = v),
+                  onGoalChanged: (v) {
+                    _goal = v;
+                    _recalculateAutoMacros();
+                  },
+                  onSexChanged: (v) {
+                    _sex = v;
+                    _recalculateAutoMacros();
+                  },
+                  onAgeChanged: (v) {
+                    _age = v;
+                    _recalculateAutoMacros();
+                  },
+                  onWeightChanged: (v) {
+                    _weight = v;
+                    _recalculateAutoMacros();
+                  },
+                  onHeightChanged: (v) {
+                    _height = v;
+                    _recalculateAutoMacros();
+                  },
+                  onActivityChanged: (v) {
+                    _activityLevel = v;
+                    _recalculateAutoMacros();
+                  },
                 ),
                 StepDaysSelection(
                   days: _days,
@@ -228,6 +290,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                     });
                     _pageController.jumpToPage(0);
                   },
+                  onGoToShoppingList: () {},
                 ),
               ],
             ),

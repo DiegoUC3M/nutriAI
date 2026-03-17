@@ -199,16 +199,66 @@ class StepMacrosConfig extends StatelessWidget {
         // Actividad física
         const _SectionLabel('Nivel de actividad física'),
         const SizedBox(height: 12),
-        _OptionSelector(
-          options: const {
-            'sedentary': '🪑 Sedentario',
-            'light': '🚶 Ligera',
-            'moderate': '🏃 Moderada',
-            'active': '🏋️ Activa',
-            'very_active': '⚡ Muy activa',
-          },
+        _ActivitySelector(
           selected: activityLevel,
           onChanged: onActivityChanged,
+        ),
+        const SizedBox(height: 28),
+
+        // Resultado calculado
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.accent.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Column(
+            children: [
+              const Text(
+                'TU PLAN CALCULADO',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textMuted,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$_totalCalories kcal',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.accent,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _MacroColumn(
+                    label: 'Proteína',
+                    grams: protein.round(),
+                    color: AppColors.secondary,
+                  ),
+                  _MacroColumn(
+                    label: 'Carbos',
+                    grams: carbs.round(),
+                    color: AppColors.primary,
+                  ),
+                  _MacroColumn(
+                    label: 'Grasa',
+                    grams: fat.round(),
+                    color: AppColors.warning,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -550,6 +600,113 @@ class _MacroSlider extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _MacroColumn extends StatelessWidget {
+  final String label;
+  final int grams;
+  final Color color;
+
+  const _MacroColumn({
+    required this.label,
+    required this.grams,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textMuted,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '${grams}g',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ActivitySelector extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  const _ActivitySelector({
+    required this.selected,
+    required this.onChanged,
+  });
+
+  static const _options = [
+    ('sedentary', '🪑 Sedentario', 'Poco o ningún ejercicio, trabajo de oficina'),
+    ('light', '🚶 Ligera', 'Ejercicio ligero 1-3 días/semana'),
+    ('moderate', '🏃 Moderada', 'Ejercicio moderado 3-5 días/semana'),
+    ('active', '🏋️ Activa', 'Ejercicio intenso 6-7 días/semana'),
+    ('very_active', '⚡ Muy activa', 'Ejercicio muy intenso o trabajo físico diario'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: _options.map((option) {
+        final (key, label, description) = option;
+        final isSelected = key == selected;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: GestureDetector(
+            onTap: () => onChanged(key),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : AppColors.surface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : AppColors.surfaceLight,
+                  width: isSelected ? 1.5 : 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isSelected ? AppColors.primary.withValues(alpha: 0.7) : AppColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

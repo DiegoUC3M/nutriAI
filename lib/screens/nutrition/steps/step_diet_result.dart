@@ -6,34 +6,22 @@ class StepDietResult extends StatefulWidget {
   final List<DietDay>? dietDays;
   final bool isGenerating;
   final VoidCallback onRegenerate;
+  final VoidCallback onGoToShoppingList;
 
   const StepDietResult({
     super.key,
     required this.dietDays,
     required this.isGenerating,
     required this.onRegenerate,
+    required this.onGoToShoppingList,
   });
 
   @override
   State<StepDietResult> createState() => _StepDietResultState();
 }
 
-class _StepDietResultState extends State<StepDietResult>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _StepDietResultState extends State<StepDietResult> {
   int _selectedDay = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,67 +33,6 @@ class _StepDietResultState extends State<StepDietResult>
       return _buildEmptyState();
     }
 
-    return Column(
-      children: [
-        // Tabs: Dieta / Lista de compra
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.surfaceLight),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            indicator: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            labelColor: Colors.white,
-            unselectedLabelColor: AppColors.textSecondary,
-            labelStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-            dividerHeight: 0,
-            tabs: const [
-              Tab(text: '🍽️ Tu Dieta'),
-              Tab(text: '🛒 Compra'),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildDietTab(),
-              _buildShoppingTab(),
-            ],
-          ),
-        ),
-
-        // Botón regenerar
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: OutlinedButton.icon(
-                onPressed: widget.onRegenerate,
-                icon: const Icon(Icons.refresh, size: 20),
-                label: const Text('Nueva Dieta'),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDietTab() {
     final days = widget.dietDays!;
     final currentDay = days[_selectedDay];
 
@@ -121,13 +48,14 @@ class _StepDietResultState extends State<StepDietResult>
             itemBuilder: (context, index) {
               final isSelected = index == _selectedDay;
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                 child: GestureDetector(
                   onTap: () => setState(() => _selectedDay = index),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary
@@ -214,105 +142,6 @@ class _StepDietResultState extends State<StepDietResult>
     );
   }
 
-  Widget _buildShoppingTab() {
-    final shoppingList = _generateShoppingList();
-
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.secondary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: AppColors.secondary.withValues(alpha: 0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.info_outline,
-                  color: AppColors.secondary, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Lista de la compra para ${widget.dietDays!.length} días de dieta',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.secondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        ...shoppingList.entries.map((category) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                category.key,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 10),
-              ...category.value.map((item) => _ShoppingItem(item: item)),
-              const SizedBox(height: 20),
-            ],
-          );
-        }),
-      ],
-    );
-  }
-
-  Map<String, List<ShoppingItem>> _generateShoppingList() {
-    // Agrupa todos los alimentos de todos los días
-    final Map<String, double> itemQuantities = {};
-    for (final day in widget.dietDays!) {
-      for (final meal in day.meals) {
-        for (final item in meal.items) {
-          itemQuantities[item.name] =
-              (itemQuantities[item.name] ?? 0) + 1;
-        }
-      }
-    }
-
-    return {
-      '🥩 Proteínas': [
-        ShoppingItem('Pechuga de pollo', '${(widget.dietDays!.length * 200)}g'),
-        ShoppingItem('Salmón', '${(widget.dietDays!.length * 150)}g'),
-        ShoppingItem('Huevos', '${widget.dietDays!.length * 3} unidades'),
-        ShoppingItem('Yogur griego', '${widget.dietDays!.length} unidades'),
-      ],
-      '🌾 Carbohidratos': [
-        ShoppingItem('Arroz integral', '${(widget.dietDays!.length * 150)}g'),
-        ShoppingItem('Avena', '${(widget.dietDays!.length * 60)}g'),
-        ShoppingItem('Patatas', '${(widget.dietDays!.length * 200)}g'),
-        ShoppingItem('Pan integral', '${widget.dietDays!.length} rebanadas'),
-      ],
-      '🥑 Grasas': [
-        ShoppingItem('Aceite de oliva', '${(widget.dietDays!.length * 15)}ml'),
-        ShoppingItem('Frutos secos', '${(widget.dietDays!.length * 30)}g'),
-      ],
-      '🥬 Verduras y frutas': [
-        ShoppingItem('Espinacas', '${(widget.dietDays!.length * 100)}g'),
-        ShoppingItem('Brócoli', '${(widget.dietDays!.length * 150)}g'),
-        ShoppingItem('Tomate', '${widget.dietDays!.length} unidades'),
-        ShoppingItem('Plátano', '${widget.dietDays!.length} unidades'),
-      ],
-      '🧴 Suplementos y otros': [
-        ShoppingItem('Proteína en polvo', '${(widget.dietDays!.length * 30)}g'),
-        ShoppingItem('Leche', '${(widget.dietDays!.length * 250)}ml'),
-      ],
-    };
-  }
-
   Widget _buildLoadingState() {
     return Center(
       child: Column(
@@ -368,6 +197,8 @@ class _StepDietResultState extends State<StepDietResult>
   }
 }
 
+// ─── Reusable widgets ───────────────────────────────────────────
+
 class _MacroBadge extends StatelessWidget {
   final String label;
   final String value;
@@ -385,30 +216,10 @@ class _MacroBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textMuted,
-          ),
-        ),
+        Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted)),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: color,
-          ),
-        ),
-        Text(
-          unit,
-          style: const TextStyle(
-            fontSize: 10,
-            color: AppColors.textSecondary,
-          ),
-        ),
+        Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
+        Text(unit, style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
       ],
     );
   }
@@ -435,22 +246,8 @@ class _MealCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                meal.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              Text(
-                '${meal.totalCalories} kcal',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
-                ),
-              ),
+              Text(meal.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              Text('${meal.totalCalories} kcal', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
             ],
           ),
           const SizedBox(height: 10),
@@ -458,37 +255,14 @@ class _MealCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.secondary,
-                      ),
-                    ),
+                    Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.secondary)),
                     const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        item.name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'P:${item.protein.round()} C:${item.carbs.round()} G:${item.fat.round()}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textMuted,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
+                    Expanded(child: Text(item.name, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary))),
+                    Text('P:${item.protein.round()} C:${item.carbs.round()} G:${item.fat.round()}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace')),
                   ],
                 ),
               )),
           const SizedBox(height: 6),
-          // Macro totales de la comida
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -516,104 +290,8 @@ class _MiniMacro extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        '$label: ${value.round()}g',
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-      ),
-    );
-  }
-}
-
-class ShoppingItem {
-  final String name;
-  final String quantity;
-
-  const ShoppingItem(this.name, this.quantity);
-}
-
-class _ShoppingItem extends StatefulWidget {
-  final ShoppingItem item;
-
-  const _ShoppingItem({required this.item});
-
-  @override
-  State<_ShoppingItem> createState() => _ShoppingItemState();
-}
-
-class _ShoppingItemState extends State<_ShoppingItem> {
-  bool _checked = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => setState(() => _checked = !_checked),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: _checked
-              ? AppColors.secondary.withValues(alpha: 0.06)
-              : AppColors.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: _checked ? AppColors.secondary.withValues(alpha: 0.3) : AppColors.surfaceLight,
-          ),
-        ),
-        child: Row(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: _checked ? AppColors.secondary : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: _checked ? AppColors.secondary : AppColors.textMuted,
-                  width: 2,
-                ),
-              ),
-              child: _checked
-                  ? const Icon(Icons.check, size: 16, color: Colors.white)
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                widget.item.name,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: _checked
-                      ? AppColors.textMuted
-                      : AppColors.textPrimary,
-                  decoration: _checked
-                      ? TextDecoration.lineThrough
-                      : null,
-                ),
-              ),
-            ),
-            Text(
-              widget.item.quantity,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: _checked
-                    ? AppColors.textMuted
-                    : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+      child: Text('$label: ${value.round()}g', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
     );
   }
 }
