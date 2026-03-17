@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../data/food_database.dart';
 import '../../../theme/app_theme.dart';
 import '../nutrition_flow_screen.dart';
 
@@ -348,37 +349,28 @@ class _StepShoppingListState extends State<StepShoppingList> {
   }
 
   String _cleanName(String name) {
+    // Quitar gramaje "(130g)"
     String clean = name.replaceAll(RegExp(r'\s*\([^)]*\)'), '');
+    // Quitar métodos de cocción (incluye variantes de género)
     const methods = [
-      'a la plancha', 'al horno', 'cocida', 'cocido',
-      'salteadas', 'salteado', 'al vapor', 'hervida', 'hervido',
-      'frita', 'frito', 'asada', 'asado', 'a la parrilla',
+      'a la plancha', 'al horno', 'a la parrilla', 'al vapor',
+      'salteado/a', 'salteado', 'salteada', 'salteadas', 'salteados',
+      'cocido', 'cocida', 'cocidos', 'cocidas',
+      'hervido', 'hervida', 'hervidos', 'hervidas',
+      'frito', 'frita', 'fritos', 'fritas',
+      'asado', 'asada', 'asados', 'asadas',
     ];
     for (final method in methods) {
-      clean = clean.replaceAll(RegExp('\\s+$method', caseSensitive: false), '');
+      clean = clean.replaceAll(RegExp('\\s+${RegExp.escape(method)}', caseSensitive: false), '');
     }
     return clean.trim();
   }
 
   String _inferCategory(String name, double protein, double carbs, double fat) {
-    final lower = name.toLowerCase();
+    final food = foodByName[name];
+    if (food != null) return shoppingLabel(food.category);
 
-    const proteinKw = ['pollo', 'salmón', 'salmon', 'huevo', 'clara', 'tortilla de clara', 'atún', 'ternera', 'pavo', 'carne', 'lomo', 'merluza', 'gambas'];
-    const vegKw = ['ensalada', 'verdura', 'brócoli', 'brocoli', 'espinaca', 'tomate', 'lechuga', 'pepino', 'zanahoria', 'calabacín', 'pimiento', 'cebolla'];
-    const fruitKw = ['plátano', 'platano', 'manzana', 'naranja', 'fresa', 'uva', 'kiwi', 'pera', 'melocotón', 'piña'];
-    const carbKw = ['arroz', 'avena', 'patata', 'pan ', 'pasta', 'quinoa', 'boniato', 'cereal', 'maíz'];
-    const fatKw = ['aceite', 'frutos secos', 'aguacate', 'mantequilla', 'nueces', 'almendras', 'cacahuete'];
-    const dairyKw = ['yogur', 'leche', 'queso', 'requesón'];
-    const suppKw = ['proteína en polvo', 'batido de proteína', 'batido de proteínas', 'suplemento', 'creatina'];
-
-    if (proteinKw.any((k) => lower.contains(k))) return '🥩 Proteínas';
-    if (dairyKw.any((k) => lower.contains(k))) return '🥛 Lácteos';
-    if (carbKw.any((k) => lower.contains(k))) return '🌾 Carbohidratos';
-    if (vegKw.any((k) => lower.contains(k))) return '🥬 Verduras y frutas';
-    if (fruitKw.any((k) => lower.contains(k))) return '🥬 Verduras y frutas';
-    if (fatKw.any((k) => lower.contains(k))) return '🥑 Grasas saludables';
-    if (suppKw.any((k) => lower.contains(k))) return '🧴 Suplementos y otros';
-
+    // Fallback: heurística por macros para items desconocidos
     final total = protein + carbs + fat;
     if (total == 0) return '🧴 Suplementos y otros';
     if (protein / total > 0.45) return '🥩 Proteínas';
@@ -388,22 +380,16 @@ class _StepShoppingListState extends State<StepShoppingList> {
   }
 
   String _unitForItem(String name) {
-    final lower = name.toLowerCase();
-    if (['aceite', 'leche'].any((k) => lower.contains(k))) return 'ml';
-    if (['yogur', 'plátano', 'platano', 'manzana', 'naranja', 'huevo', 'kiwi', 'pera'].any((k) => lower.contains(k))) {
-      return 'ud';
-    }
+    final food = foodByName[name];
+    if (food != null) return food.defaultUnit;
     return 'g';
   }
 
   double _estimateServing(String name, String category, int calories) {
-    final unit = _unitForItem(name);
-    if (unit == 'ud') return 1;
-    if (unit == 'ml') {
-      final lower = name.toLowerCase();
-      if (lower.contains('aceite')) return 15;
-      if (lower.contains('leche')) return 250;
-      return 100;
+    final food = foodByName[name];
+    if (food != null) {
+      if (food.defaultUnit == 'ud') return 1;
+      if (food.defaultUnit == 'ml') return food.defaultServingG;
     }
     if (category.contains('Proteínas')) return (calories / 1.7).roundToDouble();
     if (category.contains('Carbohidratos')) return (calories / 1.3).roundToDouble();

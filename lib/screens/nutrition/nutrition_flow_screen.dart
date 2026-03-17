@@ -10,8 +10,9 @@ import 'steps/step_diet_result.dart';
 
 class NutritionFlowScreen extends StatefulWidget {
   final ValueChanged<List<DietDay>?>? onDietChanged;
+  final VoidCallback? onGoToShoppingList;
 
-  const NutritionFlowScreen({super.key, this.onDietChanged});
+  const NutritionFlowScreen({super.key, this.onDietChanged, this.onGoToShoppingList});
 
   @override
   State<NutritionFlowScreen> createState() => _NutritionFlowScreenState();
@@ -88,14 +89,21 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   void _nextStep() {
     if (_currentStep < _totalSteps - 1) {
       if (_currentStep == 3) {
+        // Moving to diet result step — generate the diet
+        setState(() {
+          _currentStep = 4;
+          _isGenerating = true;
+          _dietResult = null;
+        });
         _generateDiet();
+      } else {
+        setState(() => _currentStep++);
+        _pageController.animateToPage(
+          _currentStep,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
       }
-      setState(() => _currentStep++);
-      _pageController.animateToPage(
-        _currentStep,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOut,
-      );
     }
   }
 
@@ -111,30 +119,42 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   }
 
   void _generateDiet() {
-    setState(() => _isGenerating = true);
+    setState(() {
+      _isGenerating = true;
+      _dietResult = null;
+    });
 
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (!mounted) return;
 
-      final config = MealPlanConfig(
-        targetProtein: _protein,
-        targetCarbs: _carbs,
-        targetFat: _fat,
-        days: _days,
-        mealsPerDay: _mealsPerDay,
-        varietyLevel: _varietyLevel,
-        favorites: _favoritesFoods,
-        allergies: _allergies,
-        disliked: _dislikedFoods,
-      );
+      try {
+        final config = MealPlanConfig(
+          targetProtein: _protein,
+          targetCarbs: _carbs,
+          targetFat: _fat,
+          days: _days,
+          mealsPerDay: _mealsPerDay,
+          varietyLevel: _varietyLevel,
+          favorites: _favoritesFoods,
+          allergies: _allergies,
+          disliked: _dislikedFoods,
+        );
 
-      final result = MealPlanner.generate(config);
+        final result = MealPlanner.generate(config);
 
-      setState(() {
-        _dietResult = result;
-        _isGenerating = false;
-      });
-      widget.onDietChanged?.call(_dietResult);
+        if (!mounted) return;
+        setState(() {
+          _dietResult = result;
+          _isGenerating = false;
+        });
+        widget.onDietChanged?.call(_dietResult);
+      } catch (e) {
+        if (!mounted) return;
+        debugPrint('Error generating diet: $e');
+        setState(() {
+          _isGenerating = false;
+        });
+      }
     });
   }
 
@@ -149,10 +169,17 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('NutriAI'),
-        leading: _currentStep > 0 && _currentStep < 4
+        leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: _prevStep,
+                onPressed: _currentStep == 4
+                    ? () {
+                        setState(() {
+                          _currentStep = 3;
+                          _isGenerating = false;
+                        });
+                      }
+                    : _prevStep,
               )
             : null,
         actions: [
@@ -192,89 +219,95 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
           // Pages
           Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                StepFoodPreferences(
-                  favorites: _favoritesFoods,
-                  allergies: _allergies,
-                  disliked: _dislikedFoods,
-                  onFavoritesChanged: (v) => setState(() {}),
-                  onAllergiesChanged: (v) => setState(() {}),
-                  onDislikedChanged: (v) => setState(() {}),
-                ),
-                StepMacrosConfig(
-                  autoMacros: _autoMacros,
-                  protein: _protein,
-                  carbs: _carbs,
-                  fat: _fat,
-                  goal: _goal,
-                  sex: _sex,
-                  age: _age,
-                  weight: _weight,
-                  height: _height,
-                  activityLevel: _activityLevel,
-                  onAutoMacrosChanged: (v) {
-                    _autoMacros = v;
-                    if (v) {
-                      _recalculateAutoMacros();
-                    } else {
-                      setState(() {});
-                    }
-                  },
-                  onProteinChanged: (v) => setState(() => _protein = v),
-                  onCarbsChanged: (v) => setState(() => _carbs = v),
-                  onFatChanged: (v) => setState(() => _fat = v),
-                  onGoalChanged: (v) {
-                    _goal = v;
-                    _recalculateAutoMacros();
-                  },
-                  onSexChanged: (v) {
-                    _sex = v;
-                    _recalculateAutoMacros();
-                  },
-                  onAgeChanged: (v) {
-                    _age = v;
-                    _recalculateAutoMacros();
-                  },
-                  onWeightChanged: (v) {
-                    _weight = v;
-                    _recalculateAutoMacros();
-                  },
-                  onHeightChanged: (v) {
-                    _height = v;
-                    _recalculateAutoMacros();
-                  },
-                  onActivityChanged: (v) {
-                    _activityLevel = v;
-                    _recalculateAutoMacros();
-                  },
-                ),
-                StepDaysSelection(
-                  days: _days,
-                  onDaysChanged: (v) => setState(() => _days = v),
-                ),
-                StepPlanConfig(
-                  mealsPerDay: _mealsPerDay,
-                  varietyLevel: _varietyLevel,
-                  onMealsPerDayChanged: (v) => setState(() => _mealsPerDay = v),
-                  onVarietyChanged: (v) => setState(() => _varietyLevel = v),
-                ),
-                StepDietResult(
-                  dietDays: _dietResult,
-                  isGenerating: _isGenerating,
-                  onRegenerate: () {
-                    setState(() {
-                      _dietResult = null;
-                      _currentStep = 0;
-                    });
-                    _pageController.jumpToPage(0);
-                  },
-                  onGoToShoppingList: () {},
-                ),
-              ],
-            ),
+            child: _currentStep < 4
+                ? PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      StepFoodPreferences(
+                        favorites: _favoritesFoods,
+                        allergies: _allergies,
+                        disliked: _dislikedFoods,
+                        onFavoritesChanged: (v) => setState(() {}),
+                        onAllergiesChanged: (v) => setState(() {}),
+                        onDislikedChanged: (v) => setState(() {}),
+                      ),
+                      StepMacrosConfig(
+                        autoMacros: _autoMacros,
+                        protein: _protein,
+                        carbs: _carbs,
+                        fat: _fat,
+                        goal: _goal,
+                        sex: _sex,
+                        age: _age,
+                        weight: _weight,
+                        height: _height,
+                        activityLevel: _activityLevel,
+                        onAutoMacrosChanged: (v) {
+                          _autoMacros = v;
+                          if (v) {
+                            _recalculateAutoMacros();
+                          } else {
+                            setState(() {});
+                          }
+                        },
+                        onProteinChanged: (v) => setState(() => _protein = v),
+                        onCarbsChanged: (v) => setState(() => _carbs = v),
+                        onFatChanged: (v) => setState(() => _fat = v),
+                        onGoalChanged: (v) {
+                          _goal = v;
+                          _recalculateAutoMacros();
+                        },
+                        onSexChanged: (v) {
+                          _sex = v;
+                          _recalculateAutoMacros();
+                        },
+                        onAgeChanged: (v) {
+                          _age = v;
+                          _recalculateAutoMacros();
+                        },
+                        onWeightChanged: (v) {
+                          _weight = v;
+                          _recalculateAutoMacros();
+                        },
+                        onHeightChanged: (v) {
+                          _height = v;
+                          _recalculateAutoMacros();
+                        },
+                        onActivityChanged: (v) {
+                          _activityLevel = v;
+                          _recalculateAutoMacros();
+                        },
+                      ),
+                      StepDaysSelection(
+                        days: _days,
+                        onDaysChanged: (v) => setState(() => _days = v),
+                      ),
+                      StepPlanConfig(
+                        mealsPerDay: _mealsPerDay,
+                        varietyLevel: _varietyLevel,
+                        onMealsPerDayChanged: (v) =>
+                            setState(() => _mealsPerDay = v),
+                        onVarietyChanged: (v) =>
+                            setState(() => _varietyLevel = v),
+                      ),
+                    ],
+                  )
+                : StepDietResult(
+                    dietDays: _dietResult,
+                    isGenerating: _isGenerating,
+                    onRegenerate: () {
+                      setState(() {
+                        _dietResult = null;
+                        _isGenerating = false;
+                        _currentStep = 0;
+                      });
+                      _pageController.jumpToPage(0);
+                    },
+                    onGoToShoppingList: () {
+                      widget.onGoToShoppingList?.call();
+                    },
+                  ),
           ),
 
           // Bottom button

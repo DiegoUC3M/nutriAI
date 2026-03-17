@@ -49,7 +49,7 @@ const _cookingMethods = [
   'a la plancha',
   'al horno',
   'a la parrilla',
-  'salteado/a',
+  'salteado',
   'al vapor',
 ];
 
@@ -85,8 +85,8 @@ const _slotConfigs = <int, List<_MealSlot>>{
 };
 
 // Alimentos aptos para desayuno
-const _breakfastCarbs = {'Avena', 'Pan integral', 'Tortillas'};
-const _breakfastProteins = {'Huevos', 'Pavo'};
+const _breakfastCarbs = {'Avena', 'Pan integral', 'Tortillas', 'Pan de centeno'};
+const _breakfastProteins = {'Huevos', 'Pavo', 'Claras de huevo'};
 
 // ─── Generador principal ─────────────────────────────────────────
 
@@ -109,6 +109,7 @@ class MealPlanner {
     final fats = pool.where((f) => f.category == FoodCategory.fat).toList();
     final veggies = pool.where((f) => f.category == FoodCategory.vegetable).toList();
     final fruits = pool.where((f) => f.category == FoodCategory.fruit).toList();
+    final dairy = pool.where((f) => f.category == FoodCategory.dairy).toList();
 
     // Tracking para variedad
     final recentProteins = <String>[];
@@ -132,11 +133,11 @@ class MealPlanner {
         switch (slot.type) {
           case _MealType.breakfast:
             _composeBreakfast(
-              selections, proteins, carbs, fats, fruits,
+              selections, proteins, carbs, fats, fruits, dairy,
               config, rng, recentCarbs,
             );
           case _MealType.snack:
-            _composeSnack(selections, fats, fruits, config, rng);
+            _composeSnack(selections, fats, fruits, dairy, config, rng);
           case _MealType.mainMeal:
             _composeMainMeal(
               selections, proteins, carbs, fats, veggies,
@@ -168,7 +169,7 @@ class MealPlanner {
   static void _composeBreakfast(
     List<(FoodItem, double)> selections,
     List<FoodItem> proteins, List<FoodItem> carbs,
-    List<FoodItem> fats, List<FoodItem> fruits,
+    List<FoodItem> fats, List<FoodItem> fruits, List<FoodItem> dairy,
     MealPlanConfig config, Random rng, List<String> recentCarbs,
   ) {
     // Carb de desayuno
@@ -187,8 +188,10 @@ class MealPlanner {
       selections.add((_pick(proteins, config.favorites, [], config.varietyLevel, rng), 0));
     }
 
-    // Fruta opcional
-    if (fruits.isNotEmpty) {
+    // Fruta o lácteo
+    if (dairy.isNotEmpty && rng.nextBool()) {
+      selections.add((_pick(dairy, config.favorites, [], config.varietyLevel, rng), 0));
+    } else if (fruits.isNotEmpty) {
       selections.add((_pick(fruits, config.favorites, [], config.varietyLevel, rng), 0));
     }
 
@@ -200,22 +203,18 @@ class MealPlanner {
 
   static void _composeSnack(
     List<(FoodItem, double)> selections,
-    List<FoodItem> fats, List<FoodItem> fruits,
+    List<FoodItem> fats, List<FoodItem> fruits, List<FoodItem> dairy,
     MealPlanConfig config, Random rng,
   ) {
-    // Un snack: fruta o grasa
-    if (fruits.isNotEmpty && fats.isNotEmpty) {
-      if (rng.nextBool()) {
-        selections.add((_pick(fruits, config.favorites, [], config.varietyLevel, rng),
-            0));
-      } else {
-        selections.add((_pick(fats, config.favorites, [], config.varietyLevel, rng),
-            0));
-      }
-    } else if (fruits.isNotEmpty) {
-      selections.add((_pick(fruits, config.favorites, [], config.varietyLevel, rng), 0));
-    } else if (fats.isNotEmpty) {
-      selections.add((_pick(fats, config.favorites, [], config.varietyLevel, rng), 0));
+    // Un snack: fruta, grasa o lácteo
+    final options = <List<FoodItem>>[
+      if (fruits.isNotEmpty) fruits,
+      if (fats.isNotEmpty) fats,
+      if (dairy.isNotEmpty) dairy,
+    ];
+    if (options.isNotEmpty) {
+      final chosen = options[rng.nextInt(options.length)];
+      selections.add((_pick(chosen, config.favorites, [], config.varietyLevel, rng), 0));
     }
 
     for (int i = 0; i < selections.length; i++) {

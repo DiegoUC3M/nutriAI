@@ -22,6 +22,7 @@ class _MainShellState extends State<MainShell> {
         children: [
           NutritionFlowScreen(
             onDietChanged: (diet) => setState(() => _dietResult = diet),
+            onGoToShoppingList: () => setState(() => _currentTab = 1),
           ),
           _buildShoppingTab(),
         ],

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/onboarding_screen.dart';
 import 'theme/app_theme.dart';
 import 'widgets/main_shell.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
+  runApp(MyApp(showOnboarding: !onboardingDone));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool showOnboarding;
+
+  const MyApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +22,26 @@ class MyApp extends StatelessWidget {
       title: 'NutriAI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: const MainShell(),
+      home: showOnboarding ? const _OnboardingGate() : const MainShell(),
+    );
+  }
+}
+
+class _OnboardingGate extends StatelessWidget {
+  const _OnboardingGate();
+
+  @override
+  Widget build(BuildContext context) {
+    return OnboardingScreen(
+      onComplete: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('onboarding_complete', true);
+        if (context.mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const MainShell()),
+          );
+        }
+      },
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../data/food_database.dart';
 import '../../../theme/app_theme.dart';
 
 class StepFoodPreferences extends StatelessWidget {
@@ -19,37 +20,13 @@ class StepFoodPreferences extends StatelessWidget {
     required this.onDislikedChanged,
   });
 
-  static const _proteins = [
-    'Pollo', 'Pavo', 'Ternera', 'Cerdo', 'Salmón', 'Atún',
-    'Merluza', 'Huevos', 'Tofu', 'Tempeh', 'Lentejas',
-    'Garbanzos', 'Gambas', 'Sardinas',
-  ];
-
-  static const _carbs = [
-    'Arroz', 'Pasta', 'Pan integral', 'Avena', 'Patata',
-    'Boniato', 'Quinoa', 'Cuscús', 'Maíz', 'Tortillas',
-  ];
-
-  static const _fats = [
-    'Aceite de oliva', 'Aguacate', 'Frutos secos', 'Mantequilla de cacahuete',
-    'Semillas de chía', 'Almendras', 'Nueces',
-  ];
-
-  static const _veggies = [
-    'Brócoli', 'Espinacas', 'Tomate', 'Pepino', 'Zanahoria',
-    'Calabacín', 'Pimiento', 'Cebolla', 'Lechuga', 'Champiñones',
-    'Judías verdes', 'Espárragos',
-  ];
-
-  static const _fruits = [
-    'Plátano', 'Manzana', 'Naranja', 'Fresas', 'Arándanos',
-    'Kiwi', 'Piña', 'Mango', 'Uvas', 'Pera',
-  ];
-
-  static const _allergyOptions = [
-    'Gluten', 'Lactosa', 'Frutos secos', 'Mariscos', 'Huevo',
-    'Soja', 'Pescado', 'Cacahuetes',
-  ];
+  static final _proteins = foodNamesFor(FoodCategory.protein);
+  static final _carbs    = foodNamesFor(FoodCategory.carb);
+  static final _fats     = foodNamesFor(FoodCategory.fat);
+  static final _veggies  = foodNamesFor(FoodCategory.vegetable);
+  static final _fruits   = foodNamesFor(FoodCategory.fruit);
+  static final _dairy    = foodNamesFor(FoodCategory.dairy);
+  static final _allergyOptions = allAllergenTags;
 
   @override
   Widget build(BuildContext context) {
@@ -167,6 +144,21 @@ class StepFoodPreferences extends StatelessWidget {
           ),
           const SizedBox(height: 28),
 
+          // Lácteos
+          _SectionHeader(
+            icon: Icons.breakfast_dining,
+            iconColor: AppColors.primaryLight,
+            title: 'Lácteos',
+          ),
+          const SizedBox(height: 12),
+          _ChipGroup(
+            items: _dairy,
+            selected: favorites,
+            selectedColor: AppColors.secondary,
+            onChanged: onFavoritesChanged,
+          ),
+          const SizedBox(height: 28),
+
           // Alimentos a evitar
           _SectionHeader(
             icon: Icons.block,
@@ -180,7 +172,7 @@ class StepFoodPreferences extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _ChipGroup(
-            items: [..._proteins, ..._carbs, ..._veggies],
+            items: [..._proteins, ..._carbs, ..._fats, ..._veggies, ..._fruits, ..._dairy],
             selected: disliked,
             selectedColor: AppColors.error,
             onChanged: onDislikedChanged,

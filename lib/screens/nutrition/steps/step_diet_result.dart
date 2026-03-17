@@ -138,6 +138,41 @@ class _StepDietResultState extends State<StepDietResult> {
             },
           ),
         ),
+
+        // Action buttons
+        SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: 52,
+                    child: OutlinedButton.icon(
+                      onPressed: widget.onRegenerate,
+                      icon: const Icon(Icons.refresh, size: 18),
+                      label: const Text('Regenerar'),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SizedBox(
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: widget.onGoToShoppingList,
+                      icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                      label: const Text('Lista de compra'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
