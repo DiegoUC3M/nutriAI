@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/macro_calculator.dart';
+import '../../utils/meal_planner.dart';
 import 'steps/step_food_preferences.dart';
 import 'steps/step_macros_config.dart';
 import 'steps/step_days_selection.dart';
+import 'steps/step_plan_config.dart';
 import 'steps/step_diet_result.dart';
 
 class NutritionFlowScreen extends StatefulWidget {
@@ -18,7 +20,7 @@ class NutritionFlowScreen extends StatefulWidget {
 class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 4;
+  static const int _totalSteps = 5;
 
   // Datos del flujo
   final Set<String> _favoritesFoods = {};
@@ -75,13 +77,17 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   // Días
   int _days = 7;
 
+  // Configuración del plan
+  int _mealsPerDay = 5;
+  String _varietyLevel = 'medium';
+
   // Resultado
   List<DietDay>? _dietResult;
   bool _isGenerating = false;
 
   void _nextStep() {
     if (_currentStep < _totalSteps - 1) {
-      if (_currentStep == 2) {
+      if (_currentStep == 3) {
         _generateDiet();
       }
       setState(() => _currentStep++);
@@ -107,59 +113,28 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   void _generateDiet() {
     setState(() => _isGenerating = true);
 
-    // Simulación de generación de dieta (aquí irá la IA)
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 1), () {
       if (!mounted) return;
+
+      final config = MealPlanConfig(
+        targetProtein: _protein,
+        targetCarbs: _carbs,
+        targetFat: _fat,
+        days: _days,
+        mealsPerDay: _mealsPerDay,
+        varietyLevel: _varietyLevel,
+        favorites: _favoritesFoods,
+        allergies: _allergies,
+        disliked: _dislikedFoods,
+      );
+
+      final result = MealPlanner.generate(config);
+
       setState(() {
-        _dietResult = _buildMockDiet();
+        _dietResult = result;
         _isGenerating = false;
       });
       widget.onDietChanged?.call(_dietResult);
-    });
-  }
-
-  List<DietDay> _buildMockDiet() {
-    final meals = [
-      'Desayuno',
-      'Media mañana',
-      'Almuerzo',
-      'Merienda',
-      'Cena',
-    ];
-
-    final sampleFoods = {
-      'Desayuno': [
-        MealItem('Avena con plátano', 60, 12, 6, 350),
-        MealItem('Tortilla de claras', 5, 30, 3, 170),
-      ],
-      'Media mañana': [
-        MealItem('Yogur griego con frutos secos', 15, 18, 12, 240),
-      ],
-      'Almuerzo': [
-        MealItem('Pechuga de pollo a la plancha', 0, 40, 5, 200),
-        MealItem('Arroz integral (150g)', 50, 6, 2, 240),
-        MealItem('Ensalada mixta con aceite de oliva', 8, 3, 10, 130),
-      ],
-      'Merienda': [
-        MealItem('Batido de proteínas con leche', 12, 30, 4, 200),
-      ],
-      'Cena': [
-        MealItem('Salmón al horno', 0, 35, 15, 280),
-        MealItem('Verduras salteadas', 15, 5, 5, 120),
-        MealItem('Patata cocida (200g)', 35, 4, 0, 160),
-      ],
-    };
-
-    return List.generate(_days, (i) {
-      return DietDay(
-        dayNumber: i + 1,
-        meals: meals.map((mealName) {
-          return Meal(
-            name: mealName,
-            items: sampleFoods[mealName] ?? [],
-          );
-        }).toList(),
-      );
     });
   }
 
@@ -174,14 +149,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('NutriAI'),
-        leading: _currentStep > 0 && _currentStep < 3
+        leading: _currentStep > 0 && _currentStep < 4
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _prevStep,
               )
             : null,
         actions: [
-          if (_currentStep < 3)
+          if (_currentStep < 4)
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: Center(
@@ -200,7 +175,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
       body: Column(
         children: [
           // Progress bar
-          if (_currentStep < 3)
+          if (_currentStep < 4)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               child: ClipRRect(
@@ -280,6 +255,12 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                   days: _days,
                   onDaysChanged: (v) => setState(() => _days = v),
                 ),
+                StepPlanConfig(
+                  mealsPerDay: _mealsPerDay,
+                  varietyLevel: _varietyLevel,
+                  onMealsPerDayChanged: (v) => setState(() => _mealsPerDay = v),
+                  onVarietyChanged: (v) => setState(() => _varietyLevel = v),
+                ),
                 StepDietResult(
                   dietDays: _dietResult,
                   isGenerating: _isGenerating,
@@ -297,18 +278,18 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
           ),
 
           // Bottom button
-          if (_currentStep < 3)
+          if (_currentStep < 4)
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 child: SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: _currentStep == 2
+                  child: _currentStep == 3
                       ? ElevatedButton.icon(
                           onPressed: _nextStep,
                           icon: const Icon(Icons.auto_awesome, size: 20),
-                          label: const Text('Generar Dieta con IA'),
+                          label: const Text('Generar Dieta'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.accent,
                           ),
