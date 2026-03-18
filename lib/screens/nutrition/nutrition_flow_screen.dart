@@ -247,12 +247,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                         favorites: _favoritesFoods,
                         allergies: _allergies,
                         allergyExceptions: _allergyExceptions,
+                        excludedFoods: _dislikedFoods,
                         onFavoritesChanged: (v) => setState(() {}),
                       ),
                       StepDisliked(
                         disliked: _dislikedFoods,
                         allergies: _allergies,
                         allergyExceptions: _allergyExceptions,
+                        excludedFoods: _favoritesFoods,
                         onDislikedChanged: (v) => setState(() {}),
                       ),
                       StepMacrosConfig(

@@ -7,6 +7,7 @@ class StepFavorites extends StatefulWidget {
   final Set<String> favorites;
   final Set<String> allergies;
   final Set<String> allergyExceptions;
+  final Set<String> excludedFoods;
   final ValueChanged<Set<String>> onFavoritesChanged;
 
   const StepFavorites({
@@ -14,6 +15,7 @@ class StepFavorites extends StatefulWidget {
     required this.favorites,
     required this.allergies,
     required this.allergyExceptions,
+    this.excludedFoods = const {},
     required this.onFavoritesChanged,
   });
 
@@ -26,7 +28,13 @@ class _StepFavoritesState extends State<StepFavorites> {
 
   @override
   Widget build(BuildContext context) {
-    final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions);
+    final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions)
+        .map((g) {
+          final foods = g.foods.where((f) => !widget.excludedFoods.contains(f)).toList();
+          return FoodGroup(emoji: g.emoji, title: g.title, foods: foods);
+        })
+        .where((g) => g.foods.isNotEmpty)
+        .toList();
     final totalFavorites = widget.favorites.length;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),

@@ -7,6 +7,7 @@ class StepDisliked extends StatefulWidget {
   final Set<String> disliked;
   final Set<String> allergies;
   final Set<String> allergyExceptions;
+  final Set<String> excludedFoods;
   final ValueChanged<Set<String>> onDislikedChanged;
 
   const StepDisliked({
@@ -14,6 +15,7 @@ class StepDisliked extends StatefulWidget {
     required this.disliked,
     required this.allergies,
     required this.allergyExceptions,
+    this.excludedFoods = const {},
     required this.onDislikedChanged,
   });
 
@@ -26,7 +28,13 @@ class _StepDislikedState extends State<StepDisliked> {
 
   @override
   Widget build(BuildContext context) {
-    final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions);
+    final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions)
+        .map((g) {
+          final foods = g.foods.where((f) => !widget.excludedFoods.contains(f)).toList();
+          return FoodGroup(emoji: g.emoji, title: g.title, foods: foods);
+        })
+        .where((g) => g.foods.isNotEmpty)
+        .toList();
     final totalDisliked = widget.disliked.length;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
