@@ -74,8 +74,7 @@ const foodDatabase = <FoodItem>[
   // ── Grasas saludables ──────────────────────────────────────
   FoodItem(name: 'Aceite de oliva',           category: FoodCategory.fat, proteinPer100g: 0.0,  carbsPer100g: 0.0,  fatPer100g: 100.0, caloriesPer100g: 884, defaultServingG: 15, defaultUnit: 'ml'),
   FoodItem(name: 'Aguacate',                  category: FoodCategory.fat, proteinPer100g: 2.0,  carbsPer100g: 8.5,  fatPer100g: 14.7,  caloriesPer100g: 160, defaultServingG: 80),
-  FoodItem(name: 'Frutos secos',              category: FoodCategory.fat, proteinPer100g: 20.0, carbsPer100g: 21.0, fatPer100g: 49.0,  caloriesPer100g: 607, allergenTags: {'Frutos secos'}, defaultServingG: 30),
-  FoodItem(name: 'Mantequilla de cacahuete',  category: FoodCategory.fat, proteinPer100g: 25.0, carbsPer100g: 20.0, fatPer100g: 50.0,  caloriesPer100g: 588, allergenTags: {'Cacahuetes'}, defaultServingG: 20),
+  FoodItem(name: 'Mantequilla de cacahuete',  category: FoodCategory.fat, proteinPer100g: 25.0, carbsPer100g: 20.0, fatPer100g: 50.0,  caloriesPer100g: 588, allergenTags: {'Frutos secos'}, defaultServingG: 20),
   FoodItem(name: 'Semillas de chía',          category: FoodCategory.fat, proteinPer100g: 17.0, carbsPer100g: 42.0, fatPer100g: 31.0,  caloriesPer100g: 486, defaultServingG: 15),
   FoodItem(name: 'Almendras',                 category: FoodCategory.fat, proteinPer100g: 21.0, carbsPer100g: 22.0, fatPer100g: 49.0,  caloriesPer100g: 579, allergenTags: {'Frutos secos'}, defaultServingG: 30),
   FoodItem(name: 'Nueces',                    category: FoodCategory.fat, proteinPer100g: 15.0, carbsPer100g: 14.0, fatPer100g: 65.0,  caloriesPer100g: 654, allergenTags: {'Frutos secos'}, defaultServingG: 25),
@@ -161,3 +160,7 @@ String shoppingLabel(FoodCategory cat) => switch (cat) {
   FoodCategory.vegetable || FoodCategory.fruit => '🥬 Verduras y frutas',
   FoodCategory.fat => '🥑 Grasas saludables',
 };
+
+/// Alimentos que contienen un alérgeno concreto.
+List<FoodItem> foodsWithAllergen(String tag) =>
+    foodDatabase.where((f) => f.allergenTags.contains(tag)).toList();

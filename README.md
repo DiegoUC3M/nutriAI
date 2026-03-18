@@ -1,4 +1,4 @@
-# gym_app
+# NutriAI
 
 A new Flutter project.
 

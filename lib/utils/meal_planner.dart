@@ -14,6 +14,7 @@ class MealPlanConfig {
   final String varietyLevel; // 'low', 'medium', 'high'
   final Set<String> favorites;
   final Set<String> allergies;
+  final Set<String> allergyExceptions;
   final Set<String> disliked;
 
   const MealPlanConfig({
@@ -25,6 +26,7 @@ class MealPlanConfig {
     required this.varietyLevel,
     required this.favorites,
     required this.allergies,
+    this.allergyExceptions = const {},
     required this.disliked,
   });
 
@@ -98,7 +100,7 @@ class MealPlanner {
     // Filtrar pool de alimentos disponibles
     final pool = foodDatabase.where((food) {
       if (food.allergenTags.any((tag) => config.allergies.contains(tag))) {
-        return false;
+        if (!config.allergyExceptions.contains(food.name)) return false;
       }
       if (config.disliked.contains(food.name)) return false;
       return true;

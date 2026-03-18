@@ -30,24 +30,34 @@ void main() {
       ),
     );
 
-    // Step 0: Food Preferences
+    // Step 0: Allergies
+    expect(find.text('¿Tienes alergias?'), findsOneWidget);
+
+    // Advance to Step 1: Favorites
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
     expect(find.text('¿Qué te gusta comer?'), findsOneWidget);
 
-    // Advance to Step 1: Macros
+    // Advance to Step 2: Disliked
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text('¿Qué no te gusta?'), findsOneWidget);
+
+    // Advance to Step 3: Macros
     await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
     expect(find.text('Configura tus macros'), findsOneWidget);
 
-    // Advance to Step 2: Days
+    // Advance to Step 4: Days
     await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
 
-    // Advance to Step 3: Plan Config
+    // Advance to Step 5: Plan Config
     await tester.tap(find.text('Continuar'));
     await tester.pumpAndSettle();
     expect(find.text('Configura tu plan'), findsOneWidget);
 
-    // Generate Diet (step 3 → step 4)
+    // Generate Diet (step 5 → step 6)
     expect(find.text('Generar Dieta'), findsOneWidget);
     await tester.tap(find.text('Generar Dieta'));
     await tester.pump(); // process setState

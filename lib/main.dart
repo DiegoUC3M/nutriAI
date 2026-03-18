@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 import 'widgets/main_shell.dart';
 
@@ -22,7 +23,10 @@ class MyApp extends StatelessWidget {
       title: 'NutriAI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
-      home: showOnboarding ? const _OnboardingGate() : const MainShell(),
+      home: SplashScreen(
+        nextScreen:
+            showOnboarding ? const _OnboardingGate() : const MainShell(),
+      ),
     );
   }
 }

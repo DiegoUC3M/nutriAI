@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/macro_calculator.dart';
 import '../../utils/meal_planner.dart';
-import 'steps/step_food_preferences.dart';
+import 'steps/step_allergies.dart';
+import 'steps/step_favorites.dart';
+import 'steps/step_disliked.dart';
 import 'steps/step_macros_config.dart';
 import 'steps/step_days_selection.dart';
 import 'steps/step_plan_config.dart';
@@ -21,11 +23,12 @@ class NutritionFlowScreen extends StatefulWidget {
 class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 5;
+  static const int _totalSteps = 7;
 
   // Datos del flujo
   final Set<String> _favoritesFoods = {};
   final Set<String> _allergies = {};
+  final Set<String> _allergyExceptions = {};
   final Set<String> _dislikedFoods = {};
 
   // Macros
@@ -88,10 +91,10 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
   void _nextStep() {
     if (_currentStep < _totalSteps - 1) {
-      if (_currentStep == 3) {
+      if (_currentStep == 5) {
         // Moving to diet result step — generate the diet
         setState(() {
-          _currentStep = 4;
+          _currentStep = 6;
           _isGenerating = true;
           _dietResult = null;
         });
@@ -137,6 +140,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
           varietyLevel: _varietyLevel,
           favorites: _favoritesFoods,
           allergies: _allergies,
+          allergyExceptions: _allergyExceptions,
           disliked: _dislikedFoods,
         );
 
@@ -172,10 +176,10 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: _currentStep == 4
+                onPressed: _currentStep == 6
                     ? () {
                         setState(() {
-                          _currentStep = 3;
+                          _currentStep = 5;
                           _isGenerating = false;
                         });
                       }
@@ -183,7 +187,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
               )
             : null,
         actions: [
-          if (_currentStep < 4)
+          if (_currentStep < 6)
             Padding(
               padding: const EdgeInsets.only(right: 16),
               child: Center(
@@ -202,7 +206,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
       body: Column(
         children: [
           // Progress bar
-          if (_currentStep < 4)
+          if (_currentStep < 6)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
               child: ClipRRect(
@@ -219,17 +223,23 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
           // Pages
           Expanded(
-            child: _currentStep < 4
+            child: _currentStep < 6
                 ? PageView(
                     controller: _pageController,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      StepFoodPreferences(
-                        favorites: _favoritesFoods,
+                      StepAllergies(
                         allergies: _allergies,
-                        disliked: _dislikedFoods,
-                        onFavoritesChanged: (v) => setState(() {}),
+                        allergyExceptions: _allergyExceptions,
                         onAllergiesChanged: (v) => setState(() {}),
+                        onAllergyExceptionsChanged: (v) => setState(() {}),
+                      ),
+                      StepFavorites(
+                        favorites: _favoritesFoods,
+                        onFavoritesChanged: (v) => setState(() {}),
+                      ),
+                      StepDisliked(
+                        disliked: _dislikedFoods,
                         onDislikedChanged: (v) => setState(() {}),
                       ),
                       StepMacrosConfig(
@@ -311,14 +321,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
           ),
 
           // Bottom button
-          if (_currentStep < 4)
+          if (_currentStep < 6)
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 child: SizedBox(
                   width: double.infinity,
                   height: 56,
-                  child: _currentStep == 3
+                  child: _currentStep == 5
                       ? ElevatedButton.icon(
                           onPressed: _nextStep,
                           icon: const Icon(Icons.auto_awesome, size: 20),

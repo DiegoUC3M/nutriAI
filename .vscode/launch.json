@@ -5,18 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "gym_app",
+            "name": "NutriAI",
             "request": "launch",
             "type": "dart"
         },
         {
-            "name": "gym_app (Chrome)",
+            "name": "NutriAI (Chrome)",
             "request": "launch",
             "type": "dart",
             "args": ["-d", "chrome"]
         },
         {
-            "name": "gym_app (Windows)",
+            "name": "NutriAI (Windows)",
             "request": "launch",
             "type": "dart",
             "args": ["-d", "windows"]
