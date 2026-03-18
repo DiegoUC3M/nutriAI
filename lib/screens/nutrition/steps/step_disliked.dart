@@ -3,22 +3,17 @@ import '../../../data/food_database.dart';
 import '../../../theme/app_theme.dart';
 import 'food_pref_widgets.dart';
 
-const _categoryConfig = <({FoodCategory cat, String emoji, String title})>[
-  (cat: FoodCategory.protein, emoji: '🥩', title: 'Proteínas'),
-  (cat: FoodCategory.carb, emoji: '🌾', title: 'Carbohidratos'),
-  (cat: FoodCategory.fat, emoji: '🥑', title: 'Grasas saludables'),
-  (cat: FoodCategory.vegetable, emoji: '🥬', title: 'Verduras'),
-  (cat: FoodCategory.fruit, emoji: '🍎', title: 'Frutas'),
-  (cat: FoodCategory.dairy, emoji: '🥛', title: 'Lácteos'),
-];
-
 class StepDisliked extends StatefulWidget {
   final Set<String> disliked;
+  final Set<String> allergies;
+  final Set<String> allergyExceptions;
   final ValueChanged<Set<String>> onDislikedChanged;
 
   const StepDisliked({
     super.key,
     required this.disliked,
+    required this.allergies,
+    required this.allergyExceptions,
     required this.onDislikedChanged,
   });
 
@@ -27,10 +22,11 @@ class StepDisliked extends StatefulWidget {
 }
 
 class _StepDislikedState extends State<StepDisliked> {
-  final _expandedCats = <FoodCategory>{};
+  final _expandedGroups = <int>{};
 
   @override
   Widget build(BuildContext context) {
+    final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions);
     final totalDisliked = widget.disliked.length;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -75,18 +71,18 @@ class _StepDislikedState extends State<StepDisliked> {
                 : null,
           ),
           const SizedBox(height: 16),
-          for (final cfg in _categoryConfig) ...[
+          for (var i = 0; i < groups.length; i++) ...[
             ExpandableCategoryCard(
-              emoji: cfg.emoji,
-              title: cfg.title,
-              items: foodNamesFor(cfg.cat),
+              emoji: groups[i].emoji,
+              title: groups[i].title,
+              items: groups[i].foods,
               selected: widget.disliked,
-              isExpanded: _expandedCats.contains(cfg.cat),
+              isExpanded: _expandedGroups.contains(i),
               onExpand: () => setState(() {
-                if (_expandedCats.contains(cfg.cat)) {
-                  _expandedCats.remove(cfg.cat);
+                if (_expandedGroups.contains(i)) {
+                  _expandedGroups.remove(i);
                 } else {
-                  _expandedCats.add(cfg.cat);
+                  _expandedGroups.add(i);
                 }
               }),
               onChanged: widget.onDislikedChanged,

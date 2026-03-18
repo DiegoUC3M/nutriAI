@@ -90,8 +90,6 @@ class _StepAllergiesState extends State<StepAllergies> {
                           if (isExpandable) {
                             setState(() => _expandedAllergen = tag);
                           }
-                        } else if (isExpandable && isExpanded) {
-                          setState(() => _expandedAllergen = null);
                         } else if (isExpandable && !isExpanded) {
                           setState(() => _expandedAllergen = tag);
                         } else {
@@ -101,19 +99,17 @@ class _StepAllergiesState extends State<StepAllergies> {
                           }
                           widget.onAllergyExceptionsChanged(widget.allergyExceptions);
                           widget.onAllergiesChanged(widget.allergies);
+                          if (_expandedAllergen == tag) {
+                            setState(() => _expandedAllergen = null);
+                          }
                         }
                       },
                       onLongPress: isActive && isExpandable
                           ? () {
-                              widget.allergies.remove(tag);
-                              for (final f in affectedFoods) {
-                                widget.allergyExceptions.remove(f.name);
-                              }
-                              widget.onAllergyExceptionsChanged(widget.allergyExceptions);
-                              widget.onAllergiesChanged(widget.allergies);
-                              if (_expandedAllergen == tag) {
-                                setState(() => _expandedAllergen = null);
-                              }
+                              // Toggle expand/collapse without deactivating
+                              setState(() {
+                                _expandedAllergen = isExpanded ? null : tag;
+                              });
                             }
                           : null,
                     );

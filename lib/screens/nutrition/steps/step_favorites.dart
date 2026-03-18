@@ -3,27 +3,31 @@ import '../../../data/food_database.dart';
 import '../../../theme/app_theme.dart';
 import 'food_pref_widgets.dart';
 
-const _categoryConfig = <({FoodCategory cat, String emoji, String title})>[
-  (cat: FoodCategory.protein, emoji: '🥩', title: 'Proteínas'),
-  (cat: FoodCategory.carb, emoji: '🌾', title: 'Carbohidratos'),
-  (cat: FoodCategory.fat, emoji: '🥑', title: 'Grasas saludables'),
-  (cat: FoodCategory.vegetable, emoji: '🥬', title: 'Verduras'),
-  (cat: FoodCategory.fruit, emoji: '🍎', title: 'Frutas'),
-  (cat: FoodCategory.dairy, emoji: '🥛', title: 'Lácteos'),
-];
-
-class StepFavorites extends StatelessWidget {
+class StepFavorites extends StatefulWidget {
   final Set<String> favorites;
+  final Set<String> allergies;
+  final Set<String> allergyExceptions;
   final ValueChanged<Set<String>> onFavoritesChanged;
 
   const StepFavorites({
     super.key,
     required this.favorites,
+    required this.allergies,
+    required this.allergyExceptions,
     required this.onFavoritesChanged,
   });
 
   @override
+  State<StepFavorites> createState() => _StepFavoritesState();
+}
+
+class _StepFavoritesState extends State<StepFavorites> {
+  final _expandedGroups = <int>{};
+
+  @override
   Widget build(BuildContext context) {
+    final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions);
+    final totalFavorites = widget.favorites.length;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -43,16 +47,48 @@ class StepFavorites extends StatelessWidget {
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 24),
-          for (final cfg in _categoryConfig) ...[
-            CategoryCard(
-              emoji: cfg.emoji,
-              title: cfg.title,
-              items: foodNamesFor(cfg.cat),
-              selected: favorites,
+          SectionHeader(
+            icon: Icons.favorite_rounded,
+            iconColor: AppColors.secondary,
+            title: 'Mis favoritos',
+            subtitle: 'Abre cada categoría y selecciona',
+            trailing: totalFavorites > 0
+                ? Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$totalFavorites',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.secondary,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(height: 16),
+          for (var i = 0; i < groups.length; i++) ...[
+            ExpandableCategoryCard(
+              emoji: groups[i].emoji,
+              title: groups[i].title,
+              items: groups[i].foods,
+              selected: widget.favorites,
+              isExpanded: _expandedGroups.contains(i),
               selectedColor: AppColors.secondary,
-              onChanged: onFavoritesChanged,
+              onExpand: () => setState(() {
+                if (_expandedGroups.contains(i)) {
+                  _expandedGroups.remove(i);
+                } else {
+                  _expandedGroups.add(i);
+                }
+              }),
+              onChanged: widget.onFavoritesChanged,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
           ],
           const SizedBox(height: 80),
         ],

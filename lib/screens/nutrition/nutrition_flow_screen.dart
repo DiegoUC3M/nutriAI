@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../data/food_database.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/macro_calculator.dart';
 import '../../utils/meal_planner.dart';
@@ -91,6 +92,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
   void _nextStep() {
     if (_currentStep < _totalSteps - 1) {
+      if (_currentStep == 0) {
+        // Leaving allergies → remove stale favorites/disliked
+        final allowed = filteredFoodGroups(_allergies, _allergyExceptions)
+            .expand((g) => g.foods)
+            .toSet();
+        _favoritesFoods.retainWhere(allowed.contains);
+        _dislikedFoods.retainWhere(allowed.contains);
+      }
       if (_currentStep == 5) {
         // Moving to diet result step — generate the diet
         setState(() {
@@ -236,10 +245,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                       ),
                       StepFavorites(
                         favorites: _favoritesFoods,
+                        allergies: _allergies,
+                        allergyExceptions: _allergyExceptions,
                         onFavoritesChanged: (v) => setState(() {}),
                       ),
                       StepDisliked(
                         disliked: _dislikedFoods,
+                        allergies: _allergies,
+                        allergyExceptions: _allergyExceptions,
                         onDislikedChanged: (v) => setState(() {}),
                       ),
                       StepMacrosConfig(

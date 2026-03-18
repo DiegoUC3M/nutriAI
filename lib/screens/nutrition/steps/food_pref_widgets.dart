@@ -242,6 +242,7 @@ class ExpandableCategoryCard extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onExpand;
   final ValueChanged<Set<String>> onChanged;
+  final Color selectedColor;
 
   const ExpandableCategoryCard({
     super.key,
@@ -252,6 +253,7 @@ class ExpandableCategoryCard extends StatelessWidget {
     required this.isExpanded,
     required this.onExpand,
     required this.onChanged,
+    this.selectedColor = AppColors.error,
   });
 
   @override
@@ -263,7 +265,7 @@ class ExpandableCategoryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: count > 0
-              ? AppColors.error.withValues(alpha: 0.3)
+              ? selectedColor.withValues(alpha: 0.3)
               : AppColors.cardBorder.withValues(alpha: 0.2),
         ),
       ),
@@ -291,15 +293,15 @@ class ExpandableCategoryCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.error.withValues(alpha: 0.15),
+                        color: selectedColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '$count',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.error,
+                          color: selectedColor,
                         ),
                       ),
                     ),
@@ -334,12 +336,12 @@ class ExpandableCategoryCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.error.withValues(alpha: 0.12)
+                            ? selectedColor.withValues(alpha: 0.12)
                             : AppColors.background,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: isSelected
-                              ? AppColors.error
+                              ? selectedColor
                               : AppColors.surfaceLight,
                         ),
                       ),
@@ -348,7 +350,7 @@ class ExpandableCategoryCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          color: isSelected ? AppColors.error : AppColors.textSecondary,
+                          color: isSelected ? selectedColor : AppColors.textSecondary,
                         ),
                       ),
                     ),
