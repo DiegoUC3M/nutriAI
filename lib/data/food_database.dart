@@ -63,10 +63,15 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Sardinas',   category: FoodCategory.protein, displayGroup: DisplayGroup.pescado, proteinPer100g: 21.0, carbsPer100g: 0.0,  fatPer100g: 9.0,  caloriesPer100g: 169, allergenTags: {'Pescado'}, defaultServingG: 120),
   FoodItem(name: 'Lubina',     category: FoodCategory.protein, displayGroup: DisplayGroup.pescado, proteinPer100g: 18.0, carbsPer100g: 0.0,  fatPer100g: 2.0,  caloriesPer100g: 97,  allergenTags: {'Pescado'}, defaultServingG: 180),
   FoodItem(name: 'Bacalao',    category: FoodCategory.protein, displayGroup: DisplayGroup.pescado, proteinPer100g: 18.0, carbsPer100g: 0.0,  fatPer100g: 0.7,  caloriesPer100g: 82,  allergenTags: {'Pescado'}, defaultServingG: 180),
+  FoodItem(name: 'Emperador',  category: FoodCategory.protein, displayGroup: DisplayGroup.pescado, proteinPer100g: 19.7, carbsPer100g: 0.0,  fatPer100g: 6.7,  caloriesPer100g: 144, allergenTags: {'Pescado'}, defaultServingG: 150),
 
   // ── Mariscos ────────────────────────────────────────────────
   FoodItem(name: 'Gambas',     category: FoodCategory.protein, displayGroup: DisplayGroup.marisco, proteinPer100g: 24.0, carbsPer100g: 0.2,  fatPer100g: 0.3,  caloriesPer100g: 99,  allergenTags: {'Mariscos'}, defaultServingG: 150),
   FoodItem(name: 'Calamares',  category: FoodCategory.protein, displayGroup: DisplayGroup.marisco, proteinPer100g: 17.0, carbsPer100g: 1.8,  fatPer100g: 1.4,  caloriesPer100g: 92,  allergenTags: {'Mariscos'}, defaultServingG: 150),
+  FoodItem(name: 'Pulpo',      category: FoodCategory.protein, displayGroup: DisplayGroup.marisco, proteinPer100g: 25.4, carbsPer100g: 2.2,  fatPer100g: 1.0,  caloriesPer100g: 82,  allergenTags: {'Mariscos'}, defaultServingG: 150),
+  FoodItem(name: 'Sepia',      category: FoodCategory.protein, displayGroup: DisplayGroup.marisco, proteinPer100g: 16.1, carbsPer100g: 0.8,  fatPer100g: 0.7,  caloriesPer100g: 79,  allergenTags: {'Mariscos'}, defaultServingG: 150),
+  FoodItem(name: 'Mejillones', category: FoodCategory.protein, displayGroup: DisplayGroup.marisco, proteinPer100g: 11.9, carbsPer100g: 3.7,  fatPer100g: 2.2,  caloriesPer100g: 86,  allergenTags: {'Mariscos'}, defaultServingG: 150),
+  FoodItem(name: 'Chirlas',    category: FoodCategory.protein, displayGroup: DisplayGroup.marisco, proteinPer100g: 12.8, carbsPer100g: 2.2,  fatPer100g: 0.6,  caloriesPer100g: 56,  allergenTags: {'Mariscos'}, defaultServingG: 150),
 
   // ── Huevos ─────────────────────────────────────────────────
   FoodItem(name: 'Huevos',     category: FoodCategory.protein, displayGroup: DisplayGroup.carne, proteinPer100g: 13.0, carbsPer100g: 1.1,  fatPer100g: 11.0, caloriesPer100g: 155, allergenTags: {'Huevo'}, defaultServingG: 120, defaultUnit: 'ud'),
@@ -78,6 +83,7 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Alubias',    category: FoodCategory.protein, displayGroup: DisplayGroup.legumbre, proteinPer100g: 8.7,  carbsPer100g: 21.0, fatPer100g: 0.5,  caloriesPer100g: 127, defaultServingG: 180),
   FoodItem(name: 'Tofu',       category: FoodCategory.protein, displayGroup: DisplayGroup.legumbre, proteinPer100g: 8.0,  carbsPer100g: 1.9,  fatPer100g: 4.8,  caloriesPer100g: 76,  allergenTags: {'Soja'}, defaultServingG: 200),
   FoodItem(name: 'Tempeh',     category: FoodCategory.protein, displayGroup: DisplayGroup.legumbre, proteinPer100g: 19.0, carbsPer100g: 9.4,  fatPer100g: 11.0, caloriesPer100g: 192, allergenTags: {'Soja'}, defaultServingG: 150),
+  FoodItem(name: 'Habas',      category: FoodCategory.protein, displayGroup: DisplayGroup.legumbre, proteinPer100g: 7.6,  carbsPer100g: 18.0, fatPer100g: 0.4,  caloriesPer100g: 88,  defaultServingG: 150),
 
   // ── Cereales y tubérculos ──────────────────────────────────
   FoodItem(name: 'Arroz',          category: FoodCategory.carb, displayGroup: DisplayGroup.cerealTuberculo, proteinPer100g: 2.7,  carbsPer100g: 28.0, fatPer100g: 0.3,  caloriesPer100g: 130, defaultServingG: 150),
@@ -100,6 +106,7 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Pistachos',                 category: FoodCategory.fat, displayGroup: DisplayGroup.frutoSeco, proteinPer100g: 20.0, carbsPer100g: 28.0, fatPer100g: 45.0,  caloriesPer100g: 560, allergenTags: {'Frutos secos'}, defaultServingG: 30),
   FoodItem(name: 'Anacardos',                 category: FoodCategory.fat, displayGroup: DisplayGroup.frutoSeco, proteinPer100g: 18.0, carbsPer100g: 30.0, fatPer100g: 44.0,  caloriesPer100g: 553, allergenTags: {'Frutos secos'}, defaultServingG: 30),
   FoodItem(name: 'Mantequilla de cacahuete',  category: FoodCategory.fat, displayGroup: DisplayGroup.frutoSeco, proteinPer100g: 25.0, carbsPer100g: 20.0, fatPer100g: 50.0,  caloriesPer100g: 588, allergenTags: {'Frutos secos'}, defaultServingG: 20),
+  FoodItem(name: 'Avellanas',                  category: FoodCategory.fat, displayGroup: DisplayGroup.frutoSeco, proteinPer100g: 15.0, carbsPer100g: 17.0, fatPer100g: 61.0,  caloriesPer100g: 628, allergenTags: {'Frutos secos'}, defaultServingG: 30),
 
   // ── Semillas ──────────────────────────────────────────────
   FoodItem(name: 'Pipas de calabaza',         category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 30.0, carbsPer100g: 11.0, fatPer100g: 49.0,  caloriesPer100g: 559, defaultServingG: 25),
@@ -132,6 +139,9 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Acelgas',        category: FoodCategory.vegetable, displayGroup: DisplayGroup.verdura, proteinPer100g: 1.8, carbsPer100g: 3.7,  fatPer100g: 0.2, caloriesPer100g: 19,  defaultServingG: 150),
   FoodItem(name: 'Col lombarda',   category: FoodCategory.vegetable, displayGroup: DisplayGroup.verdura, proteinPer100g: 1.4, carbsPer100g: 7.4,  fatPer100g: 0.2, caloriesPer100g: 31,  defaultServingG: 120),
   FoodItem(name: 'Apio',           category: FoodCategory.vegetable, displayGroup: DisplayGroup.verdura, proteinPer100g: 0.7, carbsPer100g: 3.0,  fatPer100g: 0.2, caloriesPer100g: 14,  defaultServingG: 100),
+  FoodItem(name: 'Setas',           category: FoodCategory.vegetable, displayGroup: DisplayGroup.verdura, proteinPer100g: 2.5, carbsPer100g: 4.0,  fatPer100g: 0.3, caloriesPer100g: 25,  defaultServingG: 120),
+  FoodItem(name: 'Guisantes',       category: FoodCategory.vegetable, displayGroup: DisplayGroup.verdura, proteinPer100g: 5.4, carbsPer100g: 14.0, fatPer100g: 0.4, caloriesPer100g: 81,  defaultServingG: 120),
+  FoodItem(name: 'Maíz dulce',      category: FoodCategory.vegetable, displayGroup: DisplayGroup.verdura, proteinPer100g: 3.2, carbsPer100g: 19.0, fatPer100g: 1.2, caloriesPer100g: 86,  defaultServingG: 120),
 
   // ── Frutas ─────────────────────────────────────────────────
   FoodItem(name: 'Plátano',    category: FoodCategory.fruit, displayGroup: DisplayGroup.fruta, proteinPer100g: 1.1, carbsPer100g: 23.0, fatPer100g: 0.3, caloriesPer100g: 89,  defaultServingG: 120, defaultUnit: 'ud'),
@@ -152,6 +162,7 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Melocotón',  category: FoodCategory.fruit, displayGroup: DisplayGroup.fruta, proteinPer100g: 0.9, carbsPer100g: 10.0, fatPer100g: 0.3, caloriesPer100g: 39,  defaultServingG: 170, defaultUnit: 'ud'),
   FoodItem(name: 'Mandarina',  category: FoodCategory.fruit, displayGroup: DisplayGroup.fruta, proteinPer100g: 0.8, carbsPer100g: 13.0, fatPer100g: 0.3, caloriesPer100g: 53,  defaultServingG: 150, defaultUnit: 'ud'),
   FoodItem(name: 'Cerezas',    category: FoodCategory.fruit, displayGroup: DisplayGroup.fruta, proteinPer100g: 1.1, carbsPer100g: 16.0, fatPer100g: 0.2, caloriesPer100g: 63,  defaultServingG: 120),
+  FoodItem(name: 'Frambuesas',  category: FoodCategory.fruit, displayGroup: DisplayGroup.fruta, proteinPer100g: 1.2, carbsPer100g: 12.0, fatPer100g: 0.7, caloriesPer100g: 52,  defaultServingG: 125),
 
   // ── Lácteos ────────────────────────────────────────────────
   FoodItem(name: 'Yogur griego',    category: FoodCategory.dairy, displayGroup: DisplayGroup.lacteo, proteinPer100g: 10.0, carbsPer100g: 3.6,  fatPer100g: 5.0,  caloriesPer100g: 97,  allergenTags: {'Lactosa'}, defaultServingG: 170, defaultUnit: 'ud'),
@@ -160,6 +171,9 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Requesón',        category: FoodCategory.dairy, displayGroup: DisplayGroup.lacteo, proteinPer100g: 11.0, carbsPer100g: 3.4,  fatPer100g: 4.3,  caloriesPer100g: 98,  allergenTags: {'Lactosa'}, defaultServingG: 100),
   FoodItem(name: 'Queso cottage',   category: FoodCategory.dairy, displayGroup: DisplayGroup.lacteo, proteinPer100g: 11.0, carbsPer100g: 3.4,  fatPer100g: 4.3,  caloriesPer100g: 98,  allergenTags: {'Lactosa'}, defaultServingG: 100),
   FoodItem(name: 'Yogur natural',   category: FoodCategory.dairy, displayGroup: DisplayGroup.lacteo, proteinPer100g: 5.0,  carbsPer100g: 7.0,  fatPer100g: 0.7,  caloriesPer100g: 56,  allergenTags: {'Lactosa'}, defaultServingG: 125, defaultUnit: 'ud'),
+  FoodItem(name: 'Leche entera',    category: FoodCategory.dairy, displayGroup: DisplayGroup.lacteo, proteinPer100g: 3.2,  carbsPer100g: 4.8,  fatPer100g: 3.6,  caloriesPer100g: 64,  allergenTags: {'Lactosa'}, defaultServingG: 250, defaultUnit: 'ml'),
+  FoodItem(name: 'Leche semi',      category: FoodCategory.dairy, displayGroup: DisplayGroup.lacteo, proteinPer100g: 3.3,  carbsPer100g: 4.8,  fatPer100g: 1.6,  caloriesPer100g: 46,  allergenTags: {'Lactosa'}, defaultServingG: 250, defaultUnit: 'ml'),
+  FoodItem(name: 'Kéfir',           category: FoodCategory.dairy, displayGroup: DisplayGroup.lacteo, proteinPer100g: 3.3,  carbsPer100g: 4.0,  fatPer100g: 1.0,  caloriesPer100g: 41,  allergenTags: {'Lactosa'}, defaultServingG: 200, defaultUnit: 'ml'),
 ];
 
 final Map<String, FoodItem> foodByName = {

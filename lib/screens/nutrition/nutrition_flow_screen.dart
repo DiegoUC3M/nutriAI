@@ -101,13 +101,8 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
         _dislikedFoods.retainWhere(allowed.contains);
       }
       if (_currentStep == 5) {
-        // Moving to diet result step — generate the diet
-        setState(() {
-          _currentStep = 6;
-          _isGenerating = true;
-          _dietResult = null;
-        });
-        _generateDiet();
+        // Check pool sufficiency before generating
+        _checkPoolAndGenerate();
       } else {
         setState(() => _currentStep++);
         _pageController.animateToPage(
@@ -128,6 +123,107 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
         curve: Curves.easeInOut,
       );
     }
+  }
+
+  void _startGeneration() {
+    setState(() {
+      _currentStep = 6;
+      _isGenerating = true;
+      _dietResult = null;
+    });
+    _generateDiet();
+  }
+
+  void _checkPoolAndGenerate() {
+    final pool = foodDatabase.where((food) {
+      if (food.allergenTags.any((tag) => _allergies.contains(tag))) {
+        if (!_allergyExceptions.contains(food.name)) return false;
+      }
+      if (_dislikedFoods.contains(food.name)) return false;
+      return true;
+    }).toList();
+
+    const categoryLabels = <FoodCategory, String>{
+      FoodCategory.protein: 'Proteínas',
+      FoodCategory.carb: 'Carbohidratos',
+      FoodCategory.fat: 'Grasas',
+    };
+
+    final missing = <String>[];
+    for (final entry in categoryLabels.entries) {
+      if (!pool.any((f) => f.category == entry.key)) {
+        missing.add(entry.value);
+      }
+    }
+
+    if (missing.isEmpty) {
+      _startGeneration();
+      return;
+    }
+
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 24),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Categorías sin alimentos',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Tus alergias y alimentos descartados han eliminado todas las opciones de:',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            ...missing.map((cat) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                children: [
+                  const Icon(Icons.block, color: AppColors.error, size: 16),
+                  const SizedBox(width: 8),
+                  Text(cat, style: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.error,
+                  )),
+                ],
+              ),
+            )),
+            const SizedBox(height: 8),
+            const Text(
+              'La dieta generada puede no ser equilibrada. ¿Quieres continuar igualmente?',
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Volver', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Generar igualmente', style: TextStyle(color: AppColors.warning)),
+          ),
+        ],
+      ),
+    ).then((proceed) {
+      if (proceed == true) _startGeneration();
+    });
   }
 
   void _generateDiet() {
