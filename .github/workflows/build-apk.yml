@@ -34,8 +34,12 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
+      - name: Sanitize branch name
+        id: branch
+        run: echo "name=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk-${{ github.ref_name }}
+          name: release-apk-${{ steps.branch.outputs.name }}
           path: build/app/outputs/flutter-apk/app-release.apk
