@@ -1,4 +1,4 @@
-package com.example.gym_app
+package com.dfdevstudio.nutriai
 
 import io.flutter.embedding.android.FlutterActivity
 
