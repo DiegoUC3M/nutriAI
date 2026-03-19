@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../services/ad_service.dart';
 import '../theme/app_theme.dart';
 import '../screens/nutrition/nutrition_flow_screen.dart';
 import '../screens/nutrition/steps/step_shopping_list.dart';
@@ -13,6 +15,22 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentTab = 0;
   List<DietDay>? _dietResult;
+  BannerAd? _bannerAd;
+  bool _isBannerReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _bannerAd = AdService.instance.createBannerAd(
+      onLoaded: () => setState(() => _isBannerReady = true),
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,26 +45,38 @@ class _MainShellState extends State<MainShell> {
           _buildShoppingTab(),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: AppColors.surfaceLight, width: 0.5),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_isBannerReady && _bannerAd != null)
+            Container(
+              color: AppColors.background,
+              width: double.infinity,
+              height: _bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
+            ),
+          Container(
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: AppColors.surfaceLight, width: 0.5),
+              ),
+            ),
+            child: BottomNavigationBar(
+              currentIndex: _currentTab,
+              onTap: (index) => setState(() => _currentTab = index),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.restaurant_menu),
+                  label: 'NUTRICIÓN',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.shopping_cart_outlined),
+                  label: 'COMPRA',
+                ),
+              ],
+            ),
           ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentTab,
-          onTap: (index) => setState(() => _currentTab = index),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.restaurant_menu),
-              label: 'NUTRICIÓN',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_outlined),
-              label: 'COMPRA',
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

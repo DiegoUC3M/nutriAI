@@ -249,8 +249,7 @@ final displayFoodGroups = DisplayGroup.values.map((g) {
 }).toList();
 
 /// Devuelve los grupos filtrados: excluye alimentos cuyo allergenTag
-/// coincide con una alergia activa, salvo que estén en [exceptions].
-/// Los grupos que quedan vacíos tras el filtro se omiten.
+/// coincide con una alergia activa, salvo que estén en [exceptions]./// Los grupos que quedan vacíos tras el filtro se omiten.
 List<FoodGroup> filteredFoodGroups(
   Set<String> allergies, [
   Set<String> exceptions = const {},

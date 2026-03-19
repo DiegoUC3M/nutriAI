@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../services/ad_service.dart';
 import '../../../theme/app_theme.dart';
 import '../nutrition_flow_screen.dart';
 
@@ -143,30 +144,48 @@ class _StepDietResultState extends State<StepDietResult> {
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 52,
-                    child: OutlinedButton.icon(
-                      onPressed: widget.onRegenerate,
-                      icon: const Icon(Icons.refresh, size: 18),
-                      label: const Text('Regenerar'),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: widget.onGoToShoppingList,
-                      icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                      label: const Text('Lista de compra'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            AdService.instance.showRewarded(
+                              onRewarded: widget.onRegenerate,
+                            );
+                          },
+                          icon: const Icon(Icons.refresh, size: 18),
+                          label: const Text('Regenerar'),
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: widget.onGoToShoppingList,
+                          icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                          label: const Text('Lista de compra'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.secondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Se mostrará un anuncio breve al regenerar',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
                   ),
                 ),
               ],
