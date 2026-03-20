@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/food_database.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/macro_calculator.dart';
@@ -60,6 +62,37 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     _protein = result.protein;
     _carbs = result.carbs;
     _fat = result.fat;
+    _loadSavedDiet();
+  }
+
+  Future<void> _loadSavedDiet() async {
+    final prefs = await SharedPreferences.getInstance();
+    final json = prefs.getString('saved_diet');
+    if (json == null) return;
+    try {
+      final list = jsonDecode(json) as List;
+      final days = list.map((d) => DietDay.fromJson(d as Map<String, dynamic>)).toList();
+      if (!mounted || days.isEmpty) return;
+      setState(() {
+        _dietResult = days;
+        _currentStep = 6;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _pageController.jumpToPage(6);
+      });
+      widget.onDietChanged?.call(_dietResult);
+    } catch (e) {
+      debugPrint('Error loading saved diet: $e');
+    }
+  }
+
+  Future<void> _saveDiet(List<DietDay>? diet) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (diet == null) {
+      await prefs.remove('saved_diet');
+    } else {
+      await prefs.setString('saved_diet', jsonEncode(diet.map((d) => d.toJson()).toList()));
+    }
   }
 
   void _recalculateAutoMacros() {
@@ -257,6 +290,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
           _isGenerating = false;
         });
         widget.onDietChanged?.call(_dietResult);
+        _saveDiet(_dietResult);
       } catch (e) {
         if (!mounted) return;
         debugPrint('Error generating diet: $e');
@@ -418,6 +452,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                     dietDays: _dietResult,
                     isGenerating: _isGenerating,
                     onRegenerate: () {
+                      _saveDiet(null);
                       setState(() {
                         _dietResult = null;
                         _isGenerating = false;
@@ -470,6 +505,18 @@ class MealItem {
   final int calories;
 
   const MealItem(this.name, this.carbs, this.protein, this.fat, this.calories);
+
+  Map<String, dynamic> toJson() => {
+    'name': name, 'carbs': carbs, 'protein': protein, 'fat': fat, 'calories': calories,
+  };
+
+  factory MealItem.fromJson(Map<String, dynamic> j) => MealItem(
+    j['name'] as String,
+    (j['carbs'] as num).toDouble(),
+    (j['protein'] as num).toDouble(),
+    (j['fat'] as num).toDouble(),
+    (j['calories'] as num).toInt(),
+  );
 }
 
 class Meal {
@@ -482,6 +529,15 @@ class Meal {
   double get totalProtein => items.fold(0.0, (sum, item) => sum + item.protein);
   double get totalCarbs => items.fold(0.0, (sum, item) => sum + item.carbs);
   double get totalFat => items.fold(0.0, (sum, item) => sum + item.fat);
+
+  Map<String, dynamic> toJson() => {
+    'name': name, 'items': items.map((i) => i.toJson()).toList(),
+  };
+
+  factory Meal.fromJson(Map<String, dynamic> j) => Meal(
+    name: j['name'] as String,
+    items: (j['items'] as List).map((i) => MealItem.fromJson(i as Map<String, dynamic>)).toList(),
+  );
 }
 
 class DietDay {
@@ -494,4 +550,13 @@ class DietDay {
   double get totalProtein => meals.fold(0.0, (sum, m) => sum + m.totalProtein);
   double get totalCarbs => meals.fold(0.0, (sum, m) => sum + m.totalCarbs);
   double get totalFat => meals.fold(0.0, (sum, m) => sum + m.totalFat);
+
+  Map<String, dynamic> toJson() => {
+    'dayNumber': dayNumber, 'meals': meals.map((m) => m.toJson()).toList(),
+  };
+
+  factory DietDay.fromJson(Map<String, dynamic> j) => DietDay(
+    dayNumber: (j['dayNumber'] as num).toInt(),
+    meals: (j['meals'] as List).map((m) => Meal.fromJson(m as Map<String, dynamic>)).toList(),
+  );
 }
