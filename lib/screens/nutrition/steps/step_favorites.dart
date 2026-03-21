@@ -54,7 +54,29 @@ class _StepFavoritesState extends State<StepFavorites> {
             'Selecciona tus alimentos favoritos. Aparecerán con más frecuencia en tu dieta.',
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Si no seleccionas nada, todos los alimentos tendrán la misma probabilidad de aparecer. Los que marques aquí aparecerán con más frecuencia.',
+                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           SectionHeader(
             icon: Icons.favorite_rounded,
             iconColor: AppColors.secondary,

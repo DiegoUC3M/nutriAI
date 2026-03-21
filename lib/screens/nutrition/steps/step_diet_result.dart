@@ -170,7 +170,7 @@ class _StepDietResultState extends State<StepDietResult> {
                         child: ElevatedButton.icon(
                           onPressed: widget.onGoToShoppingList,
                           icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                          label: const Text('Lista de compra'),
+                          label: const Text('Compra', overflow: TextOverflow.ellipsis),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.secondary,
                           ),

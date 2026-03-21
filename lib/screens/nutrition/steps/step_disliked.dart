@@ -54,7 +54,29 @@ class _StepDislikedState extends State<StepDisliked> {
             'Estos alimentos nunca aparecerán en tu dieta. Si no quieres descartar nada, pulsa Continuar.',
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.warning.withValues(alpha: 0.2)),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded, size: 18, color: AppColors.warning),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Si no seleccionas nada, significa que no quieres descartar ningún alimento. Los que marques aquí no aparecerán en tu dieta.',
+                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
           SectionHeader(
             icon: Icons.block_rounded,
             iconColor: AppColors.error,
