@@ -24,7 +24,7 @@ class NutritionFlowScreen extends StatefulWidget {
 }
 
 class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
-  final PageController _pageController = PageController();
+  PageController _pageController = PageController();
   int _currentStep = 0;
   static const int _totalSteps = 7;
 
@@ -76,9 +76,6 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
       setState(() {
         _dietResult = days;
         _currentStep = 6;
-      });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _pageController.jumpToPage(6);
       });
       widget.onDietChanged?.call(_dietResult);
     } catch (e) {
@@ -317,6 +314,8 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: _currentStep == 6
                     ? () {
+                        _pageController.dispose();
+                        _pageController = PageController(initialPage: 5);
                         setState(() {
                           _currentStep = 5;
                           _isGenerating = false;
@@ -453,12 +452,13 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                     isGenerating: _isGenerating,
                     onRegenerate: () {
                       _saveDiet(null);
+                      _pageController.dispose();
+                      _pageController = PageController();
                       setState(() {
                         _dietResult = null;
                         _isGenerating = false;
                         _currentStep = 0;
                       });
-                      _pageController.jumpToPage(0);
                     },
                     onGoToShoppingList: () {
                       widget.onGoToShoppingList?.call();
