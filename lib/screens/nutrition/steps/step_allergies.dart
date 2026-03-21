@@ -13,7 +13,7 @@ const _allergenConfig = <String, ({IconData icon, Color color})>{
   'Mariscos': (icon: Icons.set_meal, color: Color(0xFFEF4444)),
   'Pescado': (icon: Icons.phishing, color: Color(0xFF3B82F6)),
   'Soja': (icon: Icons.spa, color: Color(0xFF84CC16)),
-  'Frutas': (icon: Icons.apple, color: Color(0xFFEF4444)),
+  'Frutas': (icon: Icons.eco, color: Color(0xFFEF4444)),
   'Apio': (icon: Icons.grass, color: Color(0xFF22C55E)),
 };
 
@@ -134,6 +134,7 @@ class _StepAllergiesState extends State<StepAllergies> {
     final foods = foodsWithAllergen(tag);
     final config = _allergenConfig[tag];
     final color = config?.color ?? AppColors.error;
+    final allAllowed = foods.every((f) => widget.allergyExceptions.contains(f.name));
 
     return Padding(
       padding: const EdgeInsets.only(top: 16),
@@ -151,15 +152,55 @@ class _StepAllergiesState extends State<StepAllergies> {
               children: [
                 Icon(Icons.tune_rounded, size: 16, color: color),
                 const SizedBox(width: 6),
-                Text(
-                  'Afinar: $tag',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color),
+                Expanded(
+                  child: Text(
+                    'Afinar: $tag',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    if (allAllowed) {
+                      // Re-block all: remove all exceptions
+                      for (final f in foods) {
+                        widget.allergyExceptions.remove(f.name);
+                      }
+                    } else {
+                      // Allow all: add all as exceptions
+                      for (final f in foods) {
+                        widget.allergyExceptions.add(f.name);
+                      }
+                    }
+                    widget.onAllergyExceptionsChanged(widget.allergyExceptions);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: allAllowed
+                          ? AppColors.error.withValues(alpha: 0.1)
+                          : AppColors.secondary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: allAllowed
+                            ? AppColors.error.withValues(alpha: 0.3)
+                            : AppColors.secondary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      allAllowed ? 'Bloquear todas' : 'Desmarcar todas',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: allAllowed ? AppColors.error : AppColors.secondary,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             const Text(
-              'Desmarca los alimentos a los que NO eres alérgico',
+              'Rojo = no puedes comerlo · Verde = sí puedes',
               style: TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
             const SizedBox(height: 10),
@@ -168,6 +209,7 @@ class _StepAllergiesState extends State<StepAllergies> {
               runSpacing: 8,
               children: foods.map((food) {
                 final isException = widget.allergyExceptions.contains(food.name);
+                final isBlocked = !isException;
                 return GestureDetector(
                   onTap: () {
                     if (isException) {
@@ -181,23 +223,23 @@ class _StepAllergiesState extends State<StepAllergies> {
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: isException
-                          ? AppColors.secondary.withValues(alpha: 0.15)
-                          : AppColors.error.withValues(alpha: 0.12),
+                      color: isBlocked
+                          ? AppColors.error.withValues(alpha: 0.12)
+                          : AppColors.secondary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isException
-                            ? AppColors.secondary
-                            : AppColors.error.withValues(alpha: 0.4),
+                        color: isBlocked
+                            ? AppColors.error.withValues(alpha: 0.4)
+                            : AppColors.secondary,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isException ? Icons.check_circle : Icons.block,
+                          isBlocked ? Icons.block : Icons.check_circle,
                           size: 15,
-                          color: isException ? AppColors.secondary : AppColors.error,
+                          color: isBlocked ? AppColors.error : AppColors.secondary,
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -205,8 +247,8 @@ class _StepAllergiesState extends State<StepAllergies> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: isException ? AppColors.secondary : AppColors.error,
-                            decoration: isException ? null : TextDecoration.lineThrough,
+                            color: isBlocked ? AppColors.error : AppColors.secondary,
+                            decoration: isBlocked ? TextDecoration.lineThrough : null,
                           ),
                         ),
                       ],
