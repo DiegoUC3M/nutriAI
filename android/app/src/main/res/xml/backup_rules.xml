@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude onboarding flag so tutorial always shows after a fresh install -->
+    <exclude domain="sharedpref" path="FlutterSharedPreferences.xml" key="flutter.onboarding_complete" />
+</full-backup-content>
