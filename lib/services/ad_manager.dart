@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -30,8 +31,8 @@ class AdManager {
   /// [onAdLoaded] is called when the ad finishes loading successfully.
   /// [onAdFailedToLoad] is called if the ad fails to load.
   void loadAd({
-    Function? onAdLoaded,
-    Function? onAdFailedToLoad,
+    VoidCallback? onAdLoaded,
+    VoidCallback? onAdFailedToLoad,
   }) {
     AppOpenAd.load(
       adUnitId: appOpenAdUnitId,
@@ -53,7 +54,7 @@ class AdManager {
   /// Shows the loaded App Open Ad.
   ///
   /// [onAdDismissed] is called when the user closes the ad.
-  void showAd({Function? onAdDismissed}) {
+  void showAd({VoidCallback? onAdDismissed}) {
     if (!_isAdLoaded || _appOpenAd == null) {
       onAdDismissed?.call();
       return;
