@@ -109,14 +109,14 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Avellanas',                  category: FoodCategory.fat, displayGroup: DisplayGroup.frutoSeco, proteinPer100g: 15.0, carbsPer100g: 17.0, fatPer100g: 61.0,  caloriesPer100g: 628, allergenTags: {'Frutos secos'}, defaultServingG: 30),
 
   // ── Semillas ──────────────────────────────────────────────
-  FoodItem(name: 'Pipas de calabaza',         category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 30.0, carbsPer100g: 11.0, fatPer100g: 49.0,  caloriesPer100g: 559, defaultServingG: 25),
-  FoodItem(name: 'Semillas de chía',          category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 17.0, carbsPer100g: 42.0, fatPer100g: 31.0,  caloriesPer100g: 486, defaultServingG: 15),
-  FoodItem(name: 'Semillas de lino',          category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 18.0, carbsPer100g: 29.0, fatPer100g: 42.0,  caloriesPer100g: 534, defaultServingG: 15),
-  FoodItem(name: 'Tahini',                    category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 17.0, carbsPer100g: 21.0, fatPer100g: 48.0,  caloriesPer100g: 595, defaultServingG: 15),
+  FoodItem(name: 'Pipas de calabaza',         category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 30.0, carbsPer100g: 11.0, fatPer100g: 49.0,  caloriesPer100g: 559, allergenTags: {'Semillas'}, defaultServingG: 25),
+  FoodItem(name: 'Semillas de chía',          category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 17.0, carbsPer100g: 42.0, fatPer100g: 31.0,  caloriesPer100g: 486, allergenTags: {'Semillas'}, defaultServingG: 15),
+  FoodItem(name: 'Semillas de lino',          category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 18.0, carbsPer100g: 29.0, fatPer100g: 42.0,  caloriesPer100g: 534, allergenTags: {'Semillas'}, defaultServingG: 15),
+  FoodItem(name: 'Tahini',                    category: FoodCategory.fat, displayGroup: DisplayGroup.semilla, proteinPer100g: 17.0, carbsPer100g: 21.0, fatPer100g: 48.0,  caloriesPer100g: 595, allergenTags: {'Semillas'}, defaultServingG: 15),
 
   // ── Aceites y grasas ──────────────────────────────────────
   FoodItem(name: 'Aceite de oliva',           category: FoodCategory.fat, displayGroup: DisplayGroup.verdura, proteinPer100g: 0.0,  carbsPer100g: 0.0,  fatPer100g: 100.0, caloriesPer100g: 884, defaultServingG: 15, defaultUnit: 'ml'),
-  FoodItem(name: 'Aguacate',                  category: FoodCategory.fat, displayGroup: DisplayGroup.fruta, proteinPer100g: 2.0,  carbsPer100g: 8.5,  fatPer100g: 14.7,  caloriesPer100g: 160, defaultServingG: 80),
+  FoodItem(name: 'Aguacate',                  category: FoodCategory.fat, displayGroup: DisplayGroup.fruta, proteinPer100g: 2.0,  carbsPer100g: 8.5,  fatPer100g: 14.7,  caloriesPer100g: 160, defaultServingG: 80, allergenTags: {'Frutas'}),
   FoodItem(name: 'Aceitunas',                 category: FoodCategory.fat, displayGroup: DisplayGroup.verdura, proteinPer100g: 1.0,  carbsPer100g: 4.0,  fatPer100g: 15.0,  caloriesPer100g: 145, defaultServingG: 30),
 
   // ── Verduras ───────────────────────────────────────────────
@@ -235,6 +235,7 @@ const allergenBlockedGroups = <String, Set<DisplayGroup>>{
   'Lactosa':      {DisplayGroup.lacteo},
   'Frutos secos': {DisplayGroup.frutoSeco},
   'Frutas':       {DisplayGroup.fruta},
+  'Semillas':     {DisplayGroup.semilla},
 };
 
 final displayFoodGroups = DisplayGroup.values.map((g) {

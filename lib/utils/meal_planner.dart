@@ -311,7 +311,7 @@ class MealPlanner {
       final food = entry.$1;
       var grams = (entry.$2 * scale).clamp(
         food.category == FoodCategory.fat ? 5.0 : 20.0,
-        food.category == FoodCategory.fat ? 60.0 : 400.0,
+        food.category == FoodCategory.fat ? 60.0 : 250.0,
       );
       grams = (grams / 5).round() * 5.0; // Redondear a múltiplos de 5g
 

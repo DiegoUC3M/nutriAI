@@ -3,7 +3,7 @@ import '../../../data/food_database.dart';
 import '../../../theme/app_theme.dart';
 import 'food_pref_widgets.dart';
 
-const _expandableAllergens = {'Frutos secos', 'Frutas', 'Pescado', 'Mariscos'};
+const _expandableAllergens = {'Frutos secos', 'Frutas', 'Pescado', 'Mariscos', 'Semillas'};
 
 const _allergenConfig = <String, ({IconData icon, Color color})>{
   'Frutos secos': (icon: Icons.forest, color: Color(0xFF92400E)),
@@ -15,6 +15,7 @@ const _allergenConfig = <String, ({IconData icon, Color color})>{
   'Soja': (icon: Icons.spa, color: Color(0xFF84CC16)),
   'Frutas': (icon: Icons.eco, color: Color(0xFFEF4444)),
   'Apio': (icon: Icons.grass, color: Color(0xFF22C55E)),
+  'Semillas': (icon: Icons.grain, color: Color(0xFFA16207)),
 };
 
 class StepAllergies extends StatefulWidget {
