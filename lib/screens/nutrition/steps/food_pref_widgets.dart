@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/translations.dart';
 import '../../../theme/app_theme.dart';
 
 /// Shared widgets used across the food preference steps.
@@ -147,8 +148,8 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final count = items.where((i) => selected.contains(i)).length;
+    final locale = Localizations.localeOf(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
@@ -217,7 +218,7 @@ class CategoryCard extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    item,
+                    tr(item, locale),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -259,6 +260,7 @@ class ExpandableCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final count = items.where((i) => selected.contains(i)).length;
+    final locale = Localizations.localeOf(context);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
@@ -346,7 +348,7 @@ class ExpandableCategoryCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        item,
+                        tr(item, locale),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,

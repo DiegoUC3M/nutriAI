@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/food_database.dart';
+import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/macro_calculator.dart';
 import '../../utils/meal_planner.dart';
@@ -174,9 +175,9 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     }).toList();
 
     const categoryLabels = <FoodCategory, String>{
-      FoodCategory.protein: 'Proteínas',
-      FoodCategory.carb: 'Carbohidratos',
-      FoodCategory.fat: 'Grasas',
+      FoodCategory.protein: 'protein',
+      FoodCategory.carb: 'carb',
+      FoodCategory.fat: 'fat',
     };
 
     final missing = <String>[];
@@ -193,17 +194,27 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
     showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        final localizedMissing = missing.map((key) {
+          switch (key) {
+            case 'protein': return l10n.categoryProteins;
+            case 'carb': return l10n.categoryCarbs;
+            case 'fat': return l10n.categoryFats;
+            default: return key;
+          }
+        }).toList();
+        return AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 24),
-            SizedBox(width: 10),
+            const Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 24),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Categorías sin alimentos',
-                style: TextStyle(
+                l10n.categoriesWithoutFood,
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -216,12 +227,12 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Tus alergias y alimentos descartados han eliminado todas las opciones de:',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+            Text(
+              l10n.categoriesWithoutFoodDesc,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 12),
-            ...missing.map((cat) => Padding(
+            ...localizedMissing.map((cat) => Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Row(
                 children: [
@@ -234,23 +245,24 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
               ),
             )),
             const SizedBox(height: 8),
-            const Text(
-              'La dieta generada puede no ser equilibrada. ¿Quieres continuar igualmente?',
-              style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
+            Text(
+              l10n.categoriesWithoutFoodQuestion,
+              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.4),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Volver', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(l10n.goBack, style: const TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Generar igualmente', style: TextStyle(color: AppColors.warning)),
+            child: Text(l10n.generateAnyway, style: const TextStyle(color: AppColors.warning)),
           ),
         ],
-      ),
+      );
+      },
     ).then((proceed) {
       if (proceed == true) _startGeneration();
     });
@@ -306,9 +318,10 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('NutriAI'),
+        title: Text(l10n.appTitle),
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -330,7 +343,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
               padding: const EdgeInsets.only(right: 16),
               child: Center(
                 child: Text(
-                  '${_currentStep + 1}/$_totalSteps',
+                  l10n.stepOf(_currentStep + 1, _totalSteps),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -478,14 +491,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                       ? ElevatedButton.icon(
                           onPressed: _nextStep,
                           icon: const Icon(Icons.auto_awesome, size: 20),
-                          label: const Text('Generar Dieta'),
+                          label: Text(l10n.generateDiet),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.accent,
                           ),
                         )
                       : ElevatedButton(
                           onPressed: _nextStep,
-                          child: const Text('Continuar'),
+                          child: Text(l10n.continueButton),
                         ),
                 ),
               ),

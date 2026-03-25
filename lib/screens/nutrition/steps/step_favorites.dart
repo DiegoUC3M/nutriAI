@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/food_database.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/translations.dart';
 import '../../../theme/app_theme.dart';
 import 'food_pref_widgets.dart';
 
@@ -28,6 +30,8 @@ class _StepFavoritesState extends State<StepFavorites> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
     final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions)
         .map((g) {
           final foods = g.foods.where((f) => !widget.excludedFoods.contains(f)).toList();
@@ -41,8 +45,8 @@ class _StepFavoritesState extends State<StepFavorites> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '¿Qué te gusta comer?',
+          Text(
+            l10n.favoritesTitle,
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w800,
@@ -50,9 +54,9 @@ class _StepFavoritesState extends State<StepFavorites> {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Selecciona tus alimentos favoritos. Aparecerán con más frecuencia en tu dieta.',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+          Text(
+            l10n.favoritesSubtitle,
+            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 16),
           Container(
@@ -62,15 +66,15 @@ class _StepFavoritesState extends State<StepFavorites> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
             ),
-            child: const Row(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
-                SizedBox(width: 10),
+                const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Si no seleccionas nada, todos los alimentos tendrán la misma probabilidad de aparecer. Los que marques aquí aparecerán con más frecuencia.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
+                    l10n.favoritesInfoText,
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
                   ),
                 ),
               ],
@@ -80,8 +84,8 @@ class _StepFavoritesState extends State<StepFavorites> {
           SectionHeader(
             icon: Icons.favorite_rounded,
             iconColor: AppColors.secondary,
-            title: 'Mis favoritos',
-            subtitle: 'Abre cada categoría y selecciona',
+            title: l10n.myFavorites,
+            subtitle: l10n.openCategoryAndSelect,
             trailing: totalFavorites > 0
                 ? Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -104,7 +108,7 @@ class _StepFavoritesState extends State<StepFavorites> {
           for (var i = 0; i < groups.length; i++) ...[
             ExpandableCategoryCard(
               emoji: groups[i].emoji,
-              title: groups[i].title,
+              title: tr(groups[i].title, locale),
               items: groups[i].foods,
               selected: widget.favorites,
               isExpanded: _expandedGroups.contains(i),

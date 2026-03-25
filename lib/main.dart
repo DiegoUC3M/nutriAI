@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/splash_screen.dart';
 import 'services/ad_service.dart';
@@ -26,6 +27,10 @@ class MyApp extends StatelessWidget {
       title: 'NutriAI',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      // ONLY FOR DEBUGGING: FORCES SPANISH LOCALE. If you want english, put "en"
+      // locale: const Locale('es'),
       home: SplashScreen(
         nextScreen:
             showOnboarding ? const _OnboardingGate() : const MainShell(),

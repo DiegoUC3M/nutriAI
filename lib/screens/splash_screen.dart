@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -153,9 +154,9 @@ class _SplashScreenState extends State<SplashScreen>
                   // Tagline
                   Opacity(
                     opacity: _textOpacity.value,
-                    child: const Text(
-                      'Tu nutrición inteligente',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)?.splashTagline ?? 'Tu nutrición inteligente',
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
                         color: AppColors.textSecondary,

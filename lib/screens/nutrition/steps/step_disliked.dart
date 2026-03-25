@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/food_database.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/translations.dart';
 import '../../../theme/app_theme.dart';
 import 'food_pref_widgets.dart';
 
@@ -28,6 +30,8 @@ class _StepDislikedState extends State<StepDisliked> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
     final groups = filteredFoodGroups(widget.allergies, widget.allergyExceptions)
         .map((g) {
           final foods = g.foods.where((f) => !widget.excludedFoods.contains(f)).toList();
@@ -41,18 +45,18 @@ class _StepDislikedState extends State<StepDisliked> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '¿Qué no te gusta?',
-            style: TextStyle(
+          Text(
+            l10n.dislikedTitle,
+            style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Estos alimentos nunca aparecerán en tu dieta. Si no quieres descartar nada, pulsa Continuar.',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+          Text(
+            l10n.dislikedSubtitle,
+            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 16),
           Container(
@@ -62,15 +66,15 @@ class _StepDislikedState extends State<StepDisliked> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.warning.withValues(alpha: 0.2)),
             ),
-            child: const Row(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline_rounded, size: 18, color: AppColors.warning),
-                SizedBox(width: 10),
+                const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.warning),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Si no seleccionas nada, significa que no quieres descartar ningún alimento. Los que marques aquí no aparecerán en tu dieta.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
+                    l10n.dislikedInfoText,
+                    style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.4),
                   ),
                 ),
               ],
@@ -80,8 +84,8 @@ class _StepDislikedState extends State<StepDisliked> {
           SectionHeader(
             icon: Icons.block_rounded,
             iconColor: AppColors.error,
-            title: 'No me gustan',
-            subtitle: 'Abre cada categoría y selecciona',
+            title: l10n.iDontLike,
+            subtitle: l10n.openCategoryAndSelect,
             trailing: totalDisliked > 0
                 ? Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -104,7 +108,7 @@ class _StepDislikedState extends State<StepDisliked> {
           for (var i = 0; i < groups.length; i++) ...[
             ExpandableCategoryCard(
               emoji: groups[i].emoji,
-              title: groups[i].title,
+              title: tr(groups[i].title, locale),
               items: groups[i].foods,
               selected: widget.disliked,
               isExpanded: _expandedGroups.contains(i),

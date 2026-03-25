@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/translations.dart';
 import '../../../theme/app_theme.dart';
 import '../../../utils/meal_planner.dart';
 
@@ -18,6 +20,8 @@ class StepPlanConfig extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
     final mealNames = getMealSlotNames(mealsPerDay);
 
     return SingleChildScrollView(
@@ -25,18 +29,18 @@ class StepPlanConfig extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Configura tu plan',
-            style: TextStyle(
+          Text(
+            l10n.configureYourPlan,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Elige cuántas comidas al día y la variedad de tu dieta.',
-            style: TextStyle(
+          Text(
+            l10n.planConfigSubtitle,
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
               height: 1.4,
@@ -45,9 +49,9 @@ class StepPlanConfig extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Comidas por día
-          const Text(
-            'Comidas al día',
-            style: TextStyle(
+          Text(
+            l10n.mealsPerDay,
+            style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -118,7 +122,7 @@ class StepPlanConfig extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    name,
+                    tr(name, locale),
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -132,16 +136,16 @@ class StepPlanConfig extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Variedad
-          const Text(
-            'Nivel de variedad',
-            style: TextStyle(
+          Text(
+            l10n.varietyLevel,
+            style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 14),
-          ..._varietyOptions.map((option) {
+          ..._buildVarietyOptions(l10n).map((option) {
             final (key, icon, label, description) = option;
             final isSelected = varietyLevel == key;
             return Padding(
@@ -215,10 +219,9 @@ class StepPlanConfig extends StatelessWidget {
     );
   }
 
-  static const _varietyOptions = [
-    ('low', '🔁', 'Baja', 'Repite comidas entre días (más fácil de preparar)'),
-    ('medium', '🔀', 'Media', 'Algo de variación día a día'),
-    ('high', '🎲', 'Alta',
-        'Máxima variedad, más ingredientes distintos cada día'),
+  static List<(String, String, String, String)> _buildVarietyOptions(AppLocalizations l10n) => [
+    ('low', '🔁', l10n.lowVariety, l10n.lowVarietyDesc),
+    ('medium', '🔀', l10n.mediumVariety, l10n.mediumVarietyDesc),
+    ('high', '🎲', l10n.highVariety, l10n.highVarietyDesc),
   ];
 }

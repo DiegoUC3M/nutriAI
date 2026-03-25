@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/translations.dart';
 import '../../../data/food_database.dart';
 import '../../../theme/app_theme.dart';
 import '../nutrition_flow_screen.dart';
@@ -35,11 +37,13 @@ class _StepShoppingListState extends State<StepShoppingList> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
     if (widget.dietDays == null || widget.dietDays!.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'Genera una dieta primero',
-          style: TextStyle(color: AppColors.textSecondary),
+          l10n.generateDietFirst,
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
       );
     }
@@ -71,7 +75,7 @@ class _StepShoppingListState extends State<StepShoppingList> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${widget.dietDays!.length} días · $_totalItems ingredientes',
+                      l10n.daysAndIngredients(widget.dietDays!.length, _totalItems),
                       style: const TextStyle(
                         fontSize: 14,
                         color: AppColors.secondary,
@@ -79,9 +83,9 @@ class _StepShoppingListState extends State<StepShoppingList> {
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      'Cantidades estimadas en base a tu dieta',
-                      style: TextStyle(
+                    Text(
+                      l10n.estimatedQuantities,
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textMuted,
                       ),
@@ -108,7 +112,7 @@ class _StepShoppingListState extends State<StepShoppingList> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '$checkedCount / $_totalItems comprados',
+                    l10n.purchasedProgress(checkedCount, _totalItems),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -152,7 +156,7 @@ class _StepShoppingListState extends State<StepShoppingList> {
               Row(
                 children: [
                   Text(
-                    category.key,
+                    tr(category.key, locale),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -233,7 +237,7 @@ class _StepShoppingListState extends State<StepShoppingList> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            entry.name,
+                            tr(entry.name, locale),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -402,6 +406,10 @@ class _StepShoppingListState extends State<StepShoppingList> {
   String _formatQuantity(_AggregatedItem data) {
     final totalAmount = data.gramsPerServing * data.count;
     if (data.unit == 'ud') {
+      final locale = Localizations.localeOf(context);
+      if (locale.languageCode == 'en') {
+        return '${data.count} ${data.count == 1 ? 'unit' : 'units'}';
+      }
       return '${data.count} ${data.count == 1 ? 'unidad' : 'unidades'}';
     }
     if (data.unit == 'ml') {

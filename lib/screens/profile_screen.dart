@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -6,9 +7,10 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Perfil'),
+        title: Text(l10n.profileTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -43,18 +45,18 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Nombre
-            const Text(
-              'Usuario',
-              style: TextStyle(
+            Text(
+              l10n.user,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Plan Gratuito',
-              style: TextStyle(
+            Text(
+              l10n.freePlan,
+              style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
               ),
@@ -66,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {},
-                child: const Text('Editar Perfil'),
+                child: Text(l10n.editProfile),
               ),
             ),
             const SizedBox(height: 24),
@@ -76,18 +78,18 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: _StatCard(
-                    label: 'RACHA',
+                    label: l10n.streakLabel,
                     value: '0',
-                    unit: 'DÍAS',
+                    unit: l10n.daysUnitUpper,
                     color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _StatCard(
-                    label: 'DIETAS',
+                    label: l10n.dietsLabel,
                     value: '0',
-                    unit: 'CREADAS',
+                    unit: l10n.createdLabel,
                     color: AppColors.primary,
                   ),
                 ),
@@ -124,9 +126,9 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.auto_awesome, color: AppColors.accent, size: 22),
                       const SizedBox(width: 8),
-                      const Text(
-                        'IA NutriAI',
-                        style: TextStyle(
+                      Text(
+                        l10n.aiNutriAI,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
@@ -135,9 +137,9 @@ class ProfileScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Genera dietas personalizadas con inteligencia artificial basadas en tus preferencias.',
-                    style: TextStyle(
+                  Text(
+                    l10n.aiDescription,
+                    style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.textSecondary,
                       height: 1.4,
@@ -154,7 +156,7 @@ class ProfileScreen extends StatelessWidget {
                           vertical: 12,
                         ),
                       ),
-                      child: const Text('Suscribirse'),
+                      child: Text(l10n.subscribe),
                     ),
                   ),
                 ],
@@ -163,11 +165,11 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Settings section
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'AJUSTES Y DATOS',
-                style: TextStyle(
+                l10n.settingsAndData,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -180,29 +182,29 @@ class ProfileScreen extends StatelessWidget {
             _SettingsTile(
               icon: Icons.person_outline,
               iconColor: AppColors.primary,
-              title: 'Datos Personales',
-              subtitle: 'Altura, peso y edad',
+              title: l10n.personalData,
+              subtitle: l10n.personalDataSub,
               onTap: () {},
             ),
             _SettingsTile(
               icon: Icons.restaurant_outlined,
               iconColor: AppColors.secondary,
-              title: 'Preferencias Alimentarias',
-              subtitle: 'Alergias y favoritos',
+              title: l10n.foodPreferences,
+              subtitle: l10n.foodPreferencesSub,
               onTap: () {},
             ),
             _SettingsTile(
               icon: Icons.track_changes,
               iconColor: AppColors.primary,
-              title: 'Objetivos Nutricionales',
-              subtitle: 'Macros y calorías',
+              title: l10n.nutritionalGoals,
+              subtitle: l10n.nutritionalGoalsSub,
               onTap: () {},
             ),
             _SettingsTile(
               icon: Icons.cloud_outlined,
               iconColor: AppColors.accent,
-              title: 'Sincronización',
-              subtitle: 'Estado de la nube',
+              title: l10n.sync,
+              subtitle: l10n.syncSub,
               onTap: () {},
             ),
 
@@ -213,7 +215,7 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {},
-                child: const Text('Cerrar Sesión'),
+                child: Text(l10n.logOut),
               ),
             ),
 

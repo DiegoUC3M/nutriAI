@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class _OnboardingPage {
   final IconData icon;
   final Color iconColor;
-  final String title;
-  final String description;
 
   const _OnboardingPage({
     required this.icon,
     required this.iconColor,
-    required this.title,
-    required this.description,
   });
 }
 
@@ -19,43 +16,22 @@ const _pages = [
   _OnboardingPage(
     icon: Icons.restaurant_menu_rounded,
     iconColor: AppColors.primary,
-    title: 'Bienvenido a NutriAI',
-    description:
-        'Tu asistente inteligente de nutrición personalizada. '
-        'Diseña dietas adaptadas a tu cuerpo, objetivos y gustos alimentarios.',
   ),
   _OnboardingPage(
     icon: Icons.tune_rounded,
     iconColor: AppColors.secondary,
-    title: 'Personalización total',
-    description:
-        'Indica tus alimentos favoritos, alergias y lo que no te gusta. '
-        'NutriAI creará planes de comida que realmente disfrutarás.',
   ),
   _OnboardingPage(
     icon: Icons.calculate_rounded,
     iconColor: AppColors.accent,
-    title: 'Macros a tu medida',
-    description:
-        'Calculamos tus necesidades calóricas y de macronutrientes '
-        'según tu peso, altura, actividad física y objetivo: '
-        'perder grasa, mantenerte o ganar músculo.',
   ),
   _OnboardingPage(
     icon: Icons.calendar_month_rounded,
     iconColor: AppColors.warning,
-    title: 'Dieta semanal completa',
-    description:
-        'Genera planes de alimentación día a día con todas las comidas: '
-        'desayuno, almuerzo, merienda y cena, ajustados a tus macros.',
   ),
   _OnboardingPage(
     icon: Icons.shopping_cart_rounded,
     iconColor: AppColors.secondaryDark,
-    title: 'Lista de la compra',
-    description:
-        'Obtén automáticamente la lista de ingredientes que necesitas, '
-        'organizada por categorías. Solo llévala al supermercado.',
   ),
 ];
 
@@ -93,6 +69,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final titles = [
+      l10n.onboardingTitle1, l10n.onboardingTitle2, l10n.onboardingTitle3,
+      l10n.onboardingTitle4, l10n.onboardingTitle5,
+    ];
+    final descs = [
+      l10n.onboardingDesc1, l10n.onboardingDesc2, l10n.onboardingDesc3,
+      l10n.onboardingDesc4, l10n.onboardingDesc5,
+    ];
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -106,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: TextButton(
                   onPressed: _skip,
                   child: Text(
-                    _currentPage < _pages.length - 1 ? 'Saltar' : '',
+                    _currentPage < _pages.length - 1 ? l10n.onboardingSkip : '',
                     style: const TextStyle(
                       color: AppColors.textMuted,
                       fontSize: 15,
@@ -122,7 +108,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 controller: _controller,
                 itemCount: _pages.length,
                 onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder: (_, i) => _PageContent(page: _pages[i]),
+                itemBuilder: (_, i) => _PageContent(
+                  page: _pages[i],
+                  title: titles[i],
+                  description: descs[i],
+                ),
               ),
             ),
 
@@ -168,8 +158,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                   child: Text(
                     _currentPage < _pages.length - 1
-                        ? 'Siguiente'
-                        : 'Empezar',
+                        ? l10n.onboardingNext
+                        : l10n.onboardingStart,
                   ),
                 ),
               ),
@@ -183,8 +173,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 class _PageContent extends StatelessWidget {
   final _OnboardingPage page;
+  final String title;
+  final String description;
 
-  const _PageContent({required this.page});
+  const _PageContent({required this.page, required this.title, required this.description});
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +196,7 @@ class _PageContent extends StatelessWidget {
           ),
           const SizedBox(height: 40),
           Text(
-            page.title,
+            title,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 26,
@@ -215,7 +207,7 @@ class _PageContent extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            page.description,
+            description,
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 15,

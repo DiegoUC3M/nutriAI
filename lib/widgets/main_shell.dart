@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
 import '../theme/app_theme.dart';
 import '../screens/nutrition/nutrition_flow_screen.dart';
@@ -66,14 +66,14 @@ class _MainShellState extends State<MainShell> {
             child: BottomNavigationBar(
               currentIndex: _currentTab,
               onTap: (index) => setState(() => _currentTab = index),
-              items: const [
+              items: [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.restaurant_menu),
-                  label: 'NUTRICIÓN',
+                  icon: const Icon(Icons.restaurant_menu),
+                  label: AppLocalizations.of(context)!.tabNutrition,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.shopping_cart_outlined),
-                  label: 'COMPRA',
+                  icon: const Icon(Icons.shopping_cart_outlined),
+                  label: AppLocalizations.of(context)!.tabShopping,
                 ),
               ],
             ),
@@ -84,9 +84,10 @@ class _MainShellState extends State<MainShell> {
   }
 
   Widget _buildShoppingTab() {
+    final l10n = AppLocalizations.of(context)!;
     if (_dietResult == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Lista de la compra')),
+        appBar: AppBar(title: Text(l10n.shoppingListTitle)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(40),
@@ -99,19 +100,19 @@ class _MainShellState extends State<MainShell> {
                   color: AppColors.textMuted.withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Sin lista de compra',
-                  style: TextStyle(
+                Text(
+                  l10n.noShoppingList,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Genera una dieta primero desde la pestaña de Nutrición para ver tu lista de la compra.',
+                Text(
+                  l10n.noShoppingListDesc,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppColors.textSecondary,
                   ),
@@ -122,7 +123,7 @@ class _MainShellState extends State<MainShell> {
                   child: ElevatedButton.icon(
                     onPressed: () => setState(() => _currentTab = 0),
                     icon: const Icon(Icons.restaurant_menu, size: 20),
-                    label: const Text('Ir a Nutrición'),
+                    label: Text(l10n.goToNutrition),
                   ),
                 ),
               ],
@@ -133,7 +134,7 @@ class _MainShellState extends State<MainShell> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Lista de la compra')),
+      appBar: AppBar(title: Text(l10n.shoppingListTitle)),
       body: StepShoppingList(dietDays: _dietResult),
     );
   }

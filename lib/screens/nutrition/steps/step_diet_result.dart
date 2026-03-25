@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/translations.dart';
 import '../../../services/ad_service.dart';
 import '../../../theme/app_theme.dart';
 import '../nutrition_flow_screen.dart';
@@ -26,6 +28,7 @@ class _StepDietResultState extends State<StepDietResult> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.isGenerating) {
       return _buildLoadingState();
     }
@@ -70,7 +73,7 @@ class _StepDietResultState extends State<StepDietResult> {
                     ),
                     child: Center(
                       child: Text(
-                        'Día ${index + 1}',
+                        l10n.dayN(index + 1),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight:
@@ -101,25 +104,25 @@ class _StepDietResultState extends State<StepDietResult> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _MacroBadge(
-                label: 'Calorías',
+                label: l10n.caloriesLabel,
                 value: '${currentDay.totalCalories}',
                 unit: 'kcal',
                 color: AppColors.primary,
               ),
               _MacroBadge(
-                label: 'Proteína',
+                label: l10n.proteinLabel,
                 value: '${currentDay.totalProtein.round()}',
                 unit: 'g',
                 color: AppColors.secondary,
               ),
               _MacroBadge(
-                label: 'Carbos',
+                label: l10n.carbsLabel,
                 value: '${currentDay.totalCarbs.round()}',
                 unit: 'g',
                 color: AppColors.primaryLight,
               ),
               _MacroBadge(
-                label: 'Grasa',
+                label: l10n.fatLabel,
                 value: '${currentDay.totalFat.round()}',
                 unit: 'g',
                 color: AppColors.warning,
@@ -159,7 +162,7 @@ class _StepDietResultState extends State<StepDietResult> {
                             );
                           },
                           icon: const Icon(Icons.refresh, size: 18),
-                          label: const Text('Regenerar'),
+                          label: Text(l10n.regenerate),
                         ),
                       ),
                     ),
@@ -170,7 +173,7 @@ class _StepDietResultState extends State<StepDietResult> {
                         child: ElevatedButton.icon(
                           onPressed: widget.onGoToShoppingList,
                           icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                          label: const Text('Compra', overflow: TextOverflow.ellipsis),
+                          label: Text(l10n.shoppingButton, overflow: TextOverflow.ellipsis),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.secondary,
                           ),
@@ -180,8 +183,8 @@ class _StepDietResultState extends State<StepDietResult> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Se mostrará un anuncio breve al regenerar',
+                Text(
+                  l10n.adNotice,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
@@ -197,6 +200,7 @@ class _StepDietResultState extends State<StepDietResult> {
   }
 
   Widget _buildLoadingState() {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -220,18 +224,18 @@ class _StepDietResultState extends State<StepDietResult> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Generando tu dieta con IA...',
-            style: TextStyle(
+          Text(
+            l10n.generatingDiet,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Analizando preferencias y macros',
-            style: TextStyle(
+          Text(
+            l10n.analyzingPreferences,
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
             ),
@@ -242,10 +246,11 @@ class _StepDietResultState extends State<StepDietResult> {
   }
 
   Widget _buildEmptyState() {
-    return const Center(
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
       child: Text(
-        'Sin resultados',
-        style: TextStyle(color: AppColors.textSecondary),
+        l10n.noResults,
+        style: const TextStyle(color: AppColors.textSecondary),
       ),
     );
   }
@@ -286,6 +291,7 @@ class _MealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -300,7 +306,7 @@ class _MealCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(meal.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              Text(tr(meal.name, locale), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               Text('${meal.totalCalories} kcal', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
             ],
           ),
@@ -311,7 +317,7 @@ class _MealCard extends StatelessWidget {
                   children: [
                     Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.secondary)),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(item.name, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary))),
+                    Expanded(child: Text(trMealItem(item.name, locale), style: const TextStyle(fontSize: 14, color: AppColors.textSecondary))),
                     Text('P:${item.protein.round()} C:${item.carbs.round()} G:${item.fat.round()}', style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontFamily: 'monospace')),
                   ],
                 ),

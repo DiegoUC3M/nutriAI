@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../data/food_database.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../l10n/translations.dart';
 import '../../../theme/app_theme.dart';
 import 'food_pref_widgets.dart';
 
@@ -41,30 +43,32 @@ class _StepAllergiesState extends State<StepAllergies> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '¿Tienes alergias?',
-            style: TextStyle(
+          Text(
+            l10n.allergiesTitle,
+            style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Selecciona tus alergias o intolerancias. Si no tienes ninguna, pulsa Continuar.',
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
+          Text(
+            l10n.allergiesSubtitle,
+            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 28),
           SectionCard(
             icon: Icons.warning_amber_rounded,
             iconColor: AppColors.warning,
-            title: 'Alergias e intolerancias',
-            subtitle: 'En algunas podrás afinar alimento por alimento.',
+            title: l10n.allergiesCardTitle,
+            subtitle: l10n.allergiesCardSubtitle,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -79,7 +83,7 @@ class _StepAllergiesState extends State<StepAllergies> {
                     final isExpanded = _expandedAllergen == tag;
 
                     return _AllergyChip(
-                      tag: tag,
+                      tag: tr(tag, locale),
                       icon: config?.icon ?? Icons.warning,
                       color: config?.color ?? AppColors.error,
                       isActive: isActive,
@@ -132,6 +136,8 @@ class _StepAllergiesState extends State<StepAllergies> {
   }
 
   Widget _buildAllergyDetail(String tag) {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
     final foods = foodsWithAllergen(tag);
     final config = _allergenConfig[tag];
     final color = config?.color ?? AppColors.error;
@@ -155,7 +161,7 @@ class _StepAllergiesState extends State<StepAllergies> {
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    'Afinar: $tag',
+                    l10n.refine(tr(tag, locale)),
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color),
                   ),
                 ),
@@ -188,7 +194,7 @@ class _StepAllergiesState extends State<StepAllergies> {
                       ),
                     ),
                     child: Text(
-                      allAllowed ? 'Bloquear todas' : 'Desmarcar todas',
+                      allAllowed ? l10n.blockAll : l10n.unblockAll,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -200,9 +206,9 @@ class _StepAllergiesState extends State<StepAllergies> {
               ],
             ),
             const SizedBox(height: 6),
-            const Text(
-              'Rojo = no puedes comerlo · Verde = sí puedes',
-              style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+            Text(
+              l10n.allergyHelpText,
+              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -244,7 +250,7 @@ class _StepAllergiesState extends State<StepAllergies> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          food.name,
+                          tr(food.name, locale),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,

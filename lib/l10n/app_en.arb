@@ -1,0 +1,188 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "NutriAI",
+  "splashTagline": "Your smart nutrition",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingStart": "Get Started",
+  "onboardingTitle1": "Welcome to NutriAI",
+  "onboardingDesc1": "Your smart personalized nutrition assistant. Design diets tailored to your body, goals, and food preferences.",
+  "onboardingTitle2": "Total personalization",
+  "onboardingDesc2": "Indicate your favorite foods, allergies, and dislikes. NutriAI will create meal plans you'll truly enjoy.",
+  "onboardingTitle3": "Custom macros",
+  "onboardingDesc3": "We calculate your caloric and macronutrient needs based on your weight, height, physical activity, and goal: lose fat, maintain, or build muscle.",
+  "onboardingTitle4": "Complete weekly diet",
+  "onboardingDesc4": "Generate day-by-day meal plans with all meals: breakfast, lunch, snack, and dinner, adjusted to your macros.",
+  "onboardingTitle5": "Shopping list",
+  "onboardingDesc5": "Automatically get the ingredient list you need, organized by category. Just take it to the store.",
+
+  "tabNutrition": "NUTRITION",
+  "tabShopping": "SHOPPING",
+  "shoppingListTitle": "Shopping List",
+  "noShoppingList": "No shopping list",
+  "noShoppingListDesc": "Generate a diet first from the Nutrition tab to see your shopping list.",
+  "goToNutrition": "Go to Nutrition",
+
+  "continueButton": "Continue",
+  "generateDiet": "Generate Diet",
+
+  "categoriesWithoutFood": "Categories without food",
+  "categoriesWithoutFoodDesc": "Your allergies and discarded foods have eliminated all options for:",
+  "categoriesWithoutFoodQuestion": "The generated diet may not be balanced. Do you want to continue anyway?",
+  "goBack": "Go back",
+  "generateAnyway": "Generate anyway",
+  "categoryProteins": "Proteins",
+  "categoryCarbs": "Carbohydrates",
+  "categoryFats": "Fats",
+
+  "allergiesTitle": "Do you have allergies?",
+  "allergiesSubtitle": "Select your allergies or intolerances. If you don't have any, tap Continue.",
+  "allergiesCardTitle": "Allergies and intolerances",
+  "allergiesCardSubtitle": "For some, you can fine-tune food by food.",
+  "refine": "Refine: {tag}",
+  "@refine": {
+    "placeholders": {
+      "tag": { "type": "String" }
+    }
+  },
+  "blockAll": "Block all",
+  "unblockAll": "Unblock all",
+  "allergyHelpText": "Red = can't eat · Green = can eat",
+
+  "favoritesTitle": "What do you like to eat?",
+  "favoritesSubtitle": "Select your favorite foods. They will appear more often in your diet.",
+  "favoritesInfoText": "If you don't select anything, all foods will have the same chance of appearing. The ones you mark here will appear more frequently.",
+  "myFavorites": "My favorites",
+  "openCategoryAndSelect": "Open each category and select",
+
+  "dislikedTitle": "What don't you like?",
+  "dislikedSubtitle": "These foods will never appear in your diet. If you don't want to discard anything, tap Continue.",
+  "dislikedInfoText": "If you don't select anything, it means you don't want to discard any food. The ones you mark here won't appear in your diet.",
+  "iDontLike": "I don't like",
+
+  "configureMacros": "Set up your macros",
+  "macrosSubtitle": "Choose how you want to define your macronutrients.",
+  "automatic": "Automatic",
+  "weCalculateForYou": "We calculate for you",
+  "manual": "Manual",
+  "youDecide": "You decide",
+  "whatIsYourGoal": "What is your goal?",
+  "loseFat": "🔥 Lose fat",
+  "maintainWeight": "⚖️ Maintain weight",
+  "gainMuscle": "💪 Build muscle",
+  "sexLabel": "Sex",
+  "male": "♂ Male",
+  "female": "♀ Female",
+  "ageLabel": "Age",
+  "weightLabel": "Weight",
+  "heightLabel": "Height",
+  "yearsUnit": "years",
+  "kgUnit": "kg",
+  "cmUnit": "cm",
+  "activityLevel": "Physical activity level",
+  "sedentary": "🪑 Sedentary",
+  "sedentaryDesc": "Little or no exercise, office work",
+  "lightActivity": "🚶 Light",
+  "lightActivityDesc": "Light exercise 1-3 days/week",
+  "moderateActivity": "🏃 Moderate",
+  "moderateActivityDesc": "Moderate exercise 3-5 days/week",
+  "activeActivity": "🏋️ Active",
+  "activeActivityDesc": "Intense exercise 6-7 days/week",
+  "veryActiveActivity": "⚡ Very active",
+  "veryActiveActivityDesc": "Very intense exercise or daily physical work",
+  "yourCalculatedPlan": "YOUR CALCULATED PLAN",
+  "estimatedCalories": "ESTIMATED CALORIES",
+  "proteinLabel": "Protein",
+  "carbsLabel": "Carbs",
+  "fatLabel": "Fat",
+  "proteinsLabel": "Proteins",
+  "carbohydratesLabel": "Carbohydrates",
+  "fatsLabel": "Fats",
+
+  "howManyDays": "How many days?",
+  "daysSubtitle": "Choose your diet plan duration. Maximum 30 days.",
+  "daysUnit": "DAYS",
+  "oneDay": "1 day",
+  "thirtyDays": "30 days",
+  "quickAccess": "Quick access",
+  "nDays": "{count, plural, =1{1 day} other{{count} days}}",
+  "@nDays": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "configureYourPlan": "Set up your plan",
+  "planConfigSubtitle": "Choose meals per day and diet variety.",
+  "mealsPerDay": "Meals per day",
+  "varietyLevel": "Variety level",
+  "lowVariety": "Low",
+  "lowVarietyDesc": "Repeat meals between days (easier to prepare)",
+  "mediumVariety": "Medium",
+  "mediumVarietyDesc": "Some daily variation",
+  "highVariety": "High",
+  "highVarietyDesc": "Maximum variety, more different ingredients each day",
+
+  "dayN": "Day {n}",
+  "@dayN": {
+    "placeholders": {
+      "n": { "type": "int" }
+    }
+  },
+  "caloriesLabel": "Calories",
+  "regenerate": "Regenerate",
+  "shoppingButton": "Shopping",
+  "adNotice": "A short ad will be shown when regenerating",
+  "generatingDiet": "Generating your diet with AI...",
+  "analyzingPreferences": "Analyzing preferences and macros",
+  "noResults": "No results",
+
+  "generateDietFirst": "Generate a diet first",
+  "daysAndIngredients": "{days} days · {items} ingredients",
+  "@daysAndIngredients": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "items": { "type": "int" }
+    }
+  },
+  "estimatedQuantities": "Estimated quantities based on your diet",
+  "purchasedProgress": "{checked} / {total} purchased",
+  "@purchasedProgress": {
+    "placeholders": {
+      "checked": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "stepOf": "{current}/{total}",
+  "@stepOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+
+  "profileTitle": "Profile",
+  "user": "User",
+  "freePlan": "Free Plan",
+  "editProfile": "Edit Profile",
+  "streakLabel": "STREAK",
+  "daysUnitUpper": "DAYS",
+  "dietsLabel": "DIETS",
+  "createdLabel": "CREATED",
+  "aiNutriAI": "AI NutriAI",
+  "aiDescription": "Generate personalized diets with artificial intelligence based on your preferences.",
+  "subscribe": "Subscribe",
+  "settingsAndData": "SETTINGS & DATA",
+  "personalData": "Personal Data",
+  "personalDataSub": "Height, weight, and age",
+  "foodPreferences": "Food Preferences",
+  "foodPreferencesSub": "Allergies and favorites",
+  "nutritionalGoals": "Nutritional Goals",
+  "nutritionalGoalsSub": "Macros and calories",
+  "sync": "Sync",
+  "syncSub": "Cloud status",
+  "logOut": "Log Out"
+}

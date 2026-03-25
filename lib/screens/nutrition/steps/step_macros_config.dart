@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 
 class StepMacrosConfig extends StatelessWidget {
@@ -53,23 +54,24 @@ class StepMacrosConfig extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Configura tus macros',
-            style: TextStyle(
+          Text(
+            l10n.configureMacros,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Elige cómo quieres definir tus macronutrientes.',
-            style: TextStyle(
+          Text(
+            l10n.macrosSubtitle,
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
               height: 1.4,
@@ -83,8 +85,8 @@ class StepMacrosConfig extends StatelessWidget {
               Expanded(
                 child: _ModeButton(
                   icon: Icons.auto_awesome,
-                  label: 'Automático',
-                  subtitle: 'Calculamos por ti',
+                  label: l10n.automatic,
+                  subtitle: l10n.weCalculateForYou,
                   isSelected: autoMacros,
                   color: AppColors.accent,
                   onTap: () => onAutoMacrosChanged(true),
@@ -94,8 +96,8 @@ class StepMacrosConfig extends StatelessWidget {
               Expanded(
                 child: _ModeButton(
                   icon: Icons.tune,
-                  label: 'Manual',
-                  subtitle: 'Tú decides',
+                  label: l10n.manual,
+                  subtitle: l10n.youDecide,
                   isSelected: !autoMacros,
                   color: AppColors.primary,
                   onTap: () => onAutoMacrosChanged(false),
@@ -118,17 +120,18 @@ class StepMacrosConfig extends StatelessWidget {
   }
 
   Widget _buildAutoSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Objetivo
-        const _SectionLabel('¿Cuál es tu objetivo?'),
+        _SectionLabel(l10n.whatIsYourGoal),
         const SizedBox(height: 12),
         _OptionSelector(
-          options: const {
-            'lose': '🔥 Perder grasa',
-            'maintain': '⚖️ Mantener peso',
-            'gain': '💪 Ganar músculo',
+          options: {
+            'lose': l10n.loseFat,
+            'maintain': l10n.maintainWeight,
+            'gain': l10n.gainMuscle,
           },
           selected: goal,
           onChanged: onGoalChanged,
@@ -136,12 +139,12 @@ class StepMacrosConfig extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Sexo
-        const _SectionLabel('Sexo'),
+        _SectionLabel(l10n.sexLabel),
         const SizedBox(height: 12),
         _OptionSelector(
-          options: const {
-            'male': '♂ Hombre',
-            'female': '♀ Mujer',
+          options: {
+            'male': l10n.male,
+            'female': l10n.female,
           },
           selected: sex,
           onChanged: onSexChanged,
@@ -153,9 +156,9 @@ class StepMacrosConfig extends StatelessWidget {
           children: [
             Expanded(
               child: _NumberInput(
-                label: 'Edad',
+                label: l10n.ageLabel,
                 value: age.toString(),
-                unit: 'años',
+                unit: l10n.yearsUnit,
                 onChanged: (v) {
                   final parsed = int.tryParse(v);
                   if (parsed != null && parsed > 0 && parsed < 120) {
@@ -167,9 +170,9 @@ class StepMacrosConfig extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _NumberInput(
-                label: 'Peso',
+                label: l10n.weightLabel,
                 value: weight.toStringAsFixed(0),
-                unit: 'kg',
+                unit: l10n.kgUnit,
                 onChanged: (v) {
                   final parsed = double.tryParse(v);
                   if (parsed != null && parsed > 0) {
@@ -181,9 +184,9 @@ class StepMacrosConfig extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _NumberInput(
-                label: 'Altura',
+                label: l10n.heightLabel,
                 value: height.toStringAsFixed(0),
-                unit: 'cm',
+                unit: l10n.cmUnit,
                 onChanged: (v) {
                   final parsed = double.tryParse(v);
                   if (parsed != null && parsed > 0) {
@@ -197,7 +200,7 @@ class StepMacrosConfig extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Actividad física
-        const _SectionLabel('Nivel de actividad física'),
+        _SectionLabel(l10n.activityLevel),
         const SizedBox(height: 12),
         _ActivitySelector(
           selected: activityLevel,
@@ -218,9 +221,9 @@ class StepMacrosConfig extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const Text(
-                'TU PLAN CALCULADO',
-                style: TextStyle(
+              Text(
+                l10n.yourCalculatedPlan,
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -241,17 +244,17 @@ class StepMacrosConfig extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _MacroColumn(
-                    label: 'Proteína',
+                    label: l10n.proteinLabel,
                     grams: protein.round(),
                     color: AppColors.secondary,
                   ),
                   _MacroColumn(
-                    label: 'Carbos',
+                    label: l10n.carbsLabel,
                     grams: carbs.round(),
                     color: AppColors.primary,
                   ),
                   _MacroColumn(
-                    label: 'Grasa',
+                    label: l10n.fatLabel,
                     grams: fat.round(),
                     color: AppColors.warning,
                   ),
@@ -265,6 +268,7 @@ class StepMacrosConfig extends StatelessWidget {
   }
 
   Widget _buildManualSection(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -281,9 +285,9 @@ class StepMacrosConfig extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const Text(
-                'CALORÍAS ESTIMADAS',
-                style: TextStyle(
+              Text(
+                l10n.estimatedCalories,
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textMuted,
@@ -306,7 +310,7 @@ class StepMacrosConfig extends StatelessWidget {
 
         // Proteínas
         _MacroSlider(
-          label: 'Proteínas',
+          label: l10n.proteinsLabel,
           value: protein,
           unit: 'g',
           color: AppColors.secondary,
@@ -319,7 +323,7 @@ class StepMacrosConfig extends StatelessWidget {
 
         // Carbohidratos
         _MacroSlider(
-          label: 'Carbohidratos',
+          label: l10n.carbohydratesLabel,
           value: carbs,
           unit: 'g',
           color: AppColors.primary,
@@ -332,7 +336,7 @@ class StepMacrosConfig extends StatelessWidget {
 
         // Grasas
         _MacroSlider(
-          label: 'Grasas',
+          label: l10n.fatsLabel,
           value: fat,
           unit: 'g',
           color: AppColors.warning,
@@ -650,18 +654,18 @@ class _ActivitySelector extends StatelessWidget {
     required this.onChanged,
   });
 
-  static const _options = [
-    ('sedentary', '🪑 Sedentario', 'Poco o ningún ejercicio, trabajo de oficina'),
-    ('light', '🚶 Ligera', 'Ejercicio ligero 1-3 días/semana'),
-    ('moderate', '🏃 Moderada', 'Ejercicio moderado 3-5 días/semana'),
-    ('active', '🏋️ Activa', 'Ejercicio intenso 6-7 días/semana'),
-    ('very_active', '⚡ Muy activa', 'Ejercicio muy intenso o trabajo físico diario'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final options = [
+      ('sedentary', l10n.sedentary, l10n.sedentaryDesc),
+      ('light', l10n.lightActivity, l10n.lightActivityDesc),
+      ('moderate', l10n.moderateActivity, l10n.moderateActivityDesc),
+      ('active', l10n.activeActivity, l10n.activeActivityDesc),
+      ('very_active', l10n.veryActiveActivity, l10n.veryActiveActivityDesc),
+    ];
     return Column(
-      children: _options.map((option) {
+      children: options.map((option) {
         final (key, label, description) = option;
         final isSelected = key == selected;
         return Padding(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 
 class StepDaysSelection extends StatelessWidget {
@@ -13,23 +14,24 @@ class StepDaysSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '¿Cuántos días?',
-            style: TextStyle(
+          Text(
+            l10n.howManyDays,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Elige la duración de tu plan de dieta. Máximo 30 días.',
-            style: TextStyle(
+          Text(
+            l10n.daysSubtitle,
+            style: const TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
               height: 1.4,
@@ -61,9 +63,9 @@ class StepDaysSelection extends StatelessWidget {
                       color: AppColors.primary,
                     ),
                   ),
-                  const Text(
-                    'DÍAS',
-                    style: TextStyle(
+                  Text(
+                    l10n.daysUnit,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textMuted,
@@ -95,26 +97,26 @@ class StepDaysSelection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '1 día',
-                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                l10n.oneDay,
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
               Text(
-                '30 días',
-                style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                l10n.thirtyDays,
+                style: const TextStyle(fontSize: 12, color: AppColors.textMuted),
               ),
             ],
           ),
           const SizedBox(height: 40),
 
           // Quick select buttons
-          const Center(
+          Center(
             child: Text(
-              'Acceso rápido',
-              style: TextStyle(
+              l10n.quickAccess,
+              style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textMuted,
@@ -126,25 +128,25 @@ class StepDaysSelection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _QuickDayButton(
-                label: '7 días',
+                label: l10n.nDays(7),
                 isSelected: days == 7,
                 onTap: () => onDaysChanged(7),
               ),
               const SizedBox(width: 12),
               _QuickDayButton(
-                label: '14 días',
+                label: l10n.nDays(14),
                 isSelected: days == 14,
                 onTap: () => onDaysChanged(14),
               ),
               const SizedBox(width: 12),
               _QuickDayButton(
-                label: '21 días',
+                label: l10n.nDays(21),
                 isSelected: days == 21,
                 onTap: () => onDaysChanged(21),
               ),
               const SizedBox(width: 12),
               _QuickDayButton(
-                label: '30 días',
+                label: l10n.nDays(30),
                 isSelected: days == 30,
                 onTap: () => onDaysChanged(30),
               ),
