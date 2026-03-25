@@ -359,11 +359,16 @@ class MealPlanner {
     final lastMeal = meals.last;
     final adjustedItems = lastMeal.items.map((item) {
       final adjustFactor = ratio.clamp(0.7, 1.4);
+      final newGrams = ((item.grams * adjustFactor) / 5).round() * 5.0;
       final newCarbs = item.carbs * adjustFactor;
       final newProtein = item.protein * adjustFactor;
       final newFat = item.fat * adjustFactor;
       final newCal = (newProtein * 4 + newCarbs * 4 + newFat * 9).round();
-      return MealItem(item.name, newCarbs, newProtein, newFat, newCal, grams: item.grams * adjustFactor);
+      final newName = item.name.replaceFirstMapped(
+        RegExp(r'\((\d+)g\)'),
+        (m) => '(${newGrams.round()}g)',
+      );
+      return MealItem(newName, newCarbs, newProtein, newFat, newCal, grams: newGrams);
     }).toList();
 
     meals[meals.length - 1] = Meal(name: lastMeal.name, items: adjustedItems);

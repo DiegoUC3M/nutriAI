@@ -284,11 +284,12 @@ class _StepShoppingListState extends State<StepShoppingList> {
           for (final ing in _extractIngredients(item)) {
             final existing = aggregated[ing.name];
             if (existing != null) {
+              existing.totalGrams += ing.gramsPerServing;
               existing.count++;
             } else {
               aggregated[ing.name] = _AggregatedItem(
                 count: 1,
-                gramsPerServing: ing.gramsPerServing,
+                totalGrams: ing.gramsPerServing,
                 category: ing.category,
                 unit: ing.unit,
               );
@@ -332,23 +333,23 @@ class _StepShoppingListState extends State<StepShoppingList> {
     if (parts.length >= 2) {
       final mainName = _cleanName(parts[0]);
       final secondaryName = _cleanName(parts.sublist(1).join(' con '));
-      final mainCal = (item.calories * 0.65).round();
-      final secCal = (item.calories * 0.35).round();
       final mainCat = _inferCategory(
           mainName, item.protein * 0.65, item.carbs * 0.65, item.fat * 0.65);
       final secCat = _inferCategory(secondaryName, item.protein * 0.35,
           item.carbs * 0.35, item.fat * 0.35);
+      final mainGrams = item.grams * 0.65;
+      final secGrams = item.grams * 0.35;
 
       return [
-        _ExtractedIngredient(mainName, _estimateServing(mainName, mainCat, mainCal), mainCat, _unitForItem(mainName)),
-        _ExtractedIngredient(secondaryName, _estimateServing(secondaryName, secCat, secCal), secCat, _unitForItem(secondaryName)),
+        _ExtractedIngredient(mainName, mainGrams, mainCat, _unitForItem(mainName)),
+        _ExtractedIngredient(secondaryName, secGrams, secCat, _unitForItem(secondaryName)),
       ];
     }
 
     final cleanedName = _cleanName(item.name);
     final category = _inferCategory(cleanedName, item.protein, item.carbs, item.fat);
     return [
-      _ExtractedIngredient(cleanedName, _estimateServing(cleanedName, category, item.calories), category, _unitForItem(cleanedName)),
+      _ExtractedIngredient(cleanedName, item.grams, category, _unitForItem(cleanedName)),
     ];
   }
 
@@ -389,22 +390,8 @@ class _StepShoppingListState extends State<StepShoppingList> {
     return 'g';
   }
 
-  double _estimateServing(String name, String category, int calories) {
-    final food = foodByName[name];
-    if (food != null) {
-      if (food.defaultUnit == 'ud') return 1;
-      if (food.defaultUnit == 'ml') return food.defaultServingG;
-    }
-    if (category.contains('Proteínas')) return (calories / 1.7).roundToDouble();
-    if (category.contains('Carbohidratos')) return (calories / 1.3).roundToDouble();
-    if (category.contains('Verduras')) return (calories / 0.35).roundToDouble();
-    if (category.contains('Grasas')) return (calories / 5.5).roundToDouble();
-    if (category.contains('Lácteos')) return (calories / 0.9).roundToDouble();
-    return (calories / 1.5).roundToDouble();
-  }
-
   String _formatQuantity(_AggregatedItem data) {
-    final totalAmount = data.gramsPerServing * data.count;
+    final totalAmount = data.totalGrams;
     if (data.unit == 'ud') {
       final locale = Localizations.localeOf(context);
       if (locale.languageCode == 'en') {
@@ -437,8 +424,8 @@ class _ExtractedIngredient {
 
 class _AggregatedItem {
   int count;
-  final double gramsPerServing;
+  double totalGrams;
   final String category;
   final String unit;
-  _AggregatedItem({required this.count, required this.gramsPerServing, required this.category, required this.unit});
+  _AggregatedItem({required this.count, required this.totalGrams, required this.category, required this.unit});
 }
