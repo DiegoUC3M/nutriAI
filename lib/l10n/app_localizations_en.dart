@@ -356,13 +356,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get regenerate => 'Regenerate';
 
   @override
+  String get regenerateDesc => 'Same settings, new diet';
+
+  @override
+  String get restartFlow => 'Preferences';
+
+  @override
+  String get restartFlowDesc => 'Go back to step 1';
+
+  @override
   String get shoppingButton => 'Shopping';
 
   @override
-  String get adNotice => 'A short ad will be shown when regenerating';
+  String get adNotice =>
+      'A short ad will be shown before regenerating or going back to step 1';
 
   @override
   String get generatingDiet => 'Generating your diet with AI...';
+
+  @override
+  String get goingBackToStep1 => 'Going back to step 1...';
 
   @override
   String get analyzingPreferences => 'Analyzing preferences and macros';

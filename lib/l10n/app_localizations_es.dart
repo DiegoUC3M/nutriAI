@@ -359,13 +359,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String get regenerate => 'Regenerar';
 
   @override
+  String get regenerateDesc => 'Mismos ajustes, nueva dieta';
+
+  @override
+  String get restartFlow => 'Preferencias';
+
+  @override
+  String get restartFlowDesc => 'Volver al paso 1';
+
+  @override
   String get shoppingButton => 'Compra';
 
   @override
-  String get adNotice => 'Se mostrará un anuncio breve al regenerar';
+  String get adNotice =>
+      'Se mostrará un anuncio breve al regenerar o al volver al paso 1';
 
   @override
   String get generatingDiet => 'Generando tu dieta con IA...';
+
+  @override
+  String get goingBackToStep1 => 'Volviendo al paso 1...';
 
   @override
   String get analyzingPreferences => 'Analizando preferencias y macros';

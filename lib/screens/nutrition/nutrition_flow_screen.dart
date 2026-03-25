@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/food_database.dart';
 import '../../l10n/app_localizations.dart';
+import '../../services/ad_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/macro_calculator.dart';
 import '../../utils/meal_planner.dart';
@@ -120,6 +121,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   // Resultado
   List<DietDay>? _dietResult;
   bool _isGenerating = false;
+  String? _loadingMessage;
 
   void _nextStep() {
     if (_currentStep < _totalSteps - 1) {
@@ -161,6 +163,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
       _currentStep = 6;
       _isGenerating = true;
       _dietResult = null;
+      _loadingMessage = null;
     });
     _generateDiet();
   }
@@ -322,19 +325,10 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
-        leading: _currentStep > 0
+        leading: _currentStep > 0 && _currentStep < 6
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: _currentStep == 6
-                    ? () {
-                        _pageController.dispose();
-                        _pageController = PageController(initialPage: 5);
-                        setState(() {
-                          _currentStep = 5;
-                          _isGenerating = false;
-                        });
-                      }
-                    : _prevStep,
+                onPressed: _prevStep,
               )
             : null,
         actions: [
@@ -463,15 +457,39 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                 : StepDietResult(
                     dietDays: _dietResult,
                     isGenerating: _isGenerating,
+                    loadingMessage: _loadingMessage,
                     onRegenerate: () {
-                      _saveDiet(null);
-                      _pageController.dispose();
-                      _pageController = PageController();
+                      final l10n = AppLocalizations.of(context)!;
                       setState(() {
+                        _isGenerating = true;
                         _dietResult = null;
-                        _isGenerating = false;
-                        _currentStep = 0;
+                        _loadingMessage = l10n.goingBackToStep1;
                       });
+                      AdService.instance.showInterstitial(
+                        onDismissed: () {
+                          Future.delayed(const Duration(milliseconds: 800), () {
+                            if (!mounted) return;
+                            _saveDiet(null);
+                            _pageController.dispose();
+                            _pageController = PageController();
+                            setState(() {
+                              _dietResult = null;
+                              _isGenerating = false;
+                              _currentStep = 0;
+                            });
+                          });
+                        },
+                      );
+                    },
+                    onNewDiet: () {
+                      setState(() {
+                        _isGenerating = true;
+                        _dietResult = null;
+                        _loadingMessage = null;
+                      });
+                      AdService.instance.showInterstitial(
+                        onDismissed: _generateDiet,
+                      );
                     },
                     onGoToShoppingList: () {
                       widget.onGoToShoppingList?.call();

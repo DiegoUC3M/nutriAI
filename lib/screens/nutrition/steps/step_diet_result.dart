@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../l10n/translations.dart';
-import '../../../services/ad_service.dart';
 import '../../../theme/app_theme.dart';
 import '../nutrition_flow_screen.dart';
 
 class StepDietResult extends StatefulWidget {
   final List<DietDay>? dietDays;
   final bool isGenerating;
+  final String? loadingMessage;
   final VoidCallback onRegenerate;
+  final VoidCallback onNewDiet;
   final VoidCallback onGoToShoppingList;
 
   const StepDietResult({
     super.key,
     required this.dietDays,
     required this.isGenerating,
+    this.loadingMessage,
     required this.onRegenerate,
+    required this.onNewDiet,
     required this.onGoToShoppingList,
   });
 
@@ -154,41 +157,75 @@ class _StepDietResultState extends State<StepDietResult> {
                   children: [
                     Expanded(
                       child: SizedBox(
-                        height: 52,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            AdService.instance.showRewarded(
-                              onRewarded: widget.onRegenerate,
-                            );
-                          },
-                          icon: const Icon(Icons.refresh, size: 18),
-                          label: Text(l10n.regenerate),
+                        height: 72,
+                        child: OutlinedButton(
+                          onPressed: widget.onRegenerate,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.settings_outlined, size: 20),
+                              const SizedBox(height: 4),
+                              Text(l10n.restartFlow, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                              Text(
+                                l10n.restartFlowDesc,
+                                style: const TextStyle(fontSize: 9, color: AppColors.textMuted, fontWeight: FontWeight.w400),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: SizedBox(
-                        height: 52,
-                        child: ElevatedButton.icon(
-                          onPressed: widget.onGoToShoppingList,
-                          icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                          label: Text(l10n.shoppingButton, overflow: TextOverflow.ellipsis),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.secondary,
+                        height: 72,
+                        child: OutlinedButton(
+                          onPressed: widget.onNewDiet,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.refresh, size: 20),
+                              const SizedBox(height: 4),
+                              Text(l10n.regenerate, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                              Text(
+                                l10n.regenerateDesc,
+                                style: const TextStyle(fontSize: 9, color: AppColors.textMuted, fontWeight: FontWeight.w400),
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   l10n.adNotice,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 11,
                     color: AppColors.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: widget.onGoToShoppingList,
+                    icon: const Icon(Icons.shopping_cart_outlined, size: 18),
+                    label: Text(l10n.shoppingButton, overflow: TextOverflow.ellipsis),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                    ),
                   ),
                 ),
               ],
@@ -225,7 +262,7 @@ class _StepDietResultState extends State<StepDietResult> {
           ),
           const SizedBox(height: 24),
           Text(
-            l10n.generatingDiet,
+            widget.loadingMessage ?? l10n.generatingDiet,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,

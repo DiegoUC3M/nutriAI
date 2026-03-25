@@ -734,6 +734,24 @@ abstract class AppLocalizations {
   /// **'Regenerate'**
   String get regenerate;
 
+  /// No description provided for @regenerateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Same settings, new diet'**
+  String get regenerateDesc;
+
+  /// No description provided for @restartFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get restartFlow;
+
+  /// No description provided for @restartFlowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back to step 1'**
+  String get restartFlowDesc;
+
   /// No description provided for @shoppingButton.
   ///
   /// In en, this message translates to:
@@ -743,7 +761,7 @@ abstract class AppLocalizations {
   /// No description provided for @adNotice.
   ///
   /// In en, this message translates to:
-  /// **'A short ad will be shown when regenerating'**
+  /// **'A short ad will be shown before regenerating or going back to step 1'**
   String get adNotice;
 
   /// No description provided for @generatingDiet.
@@ -751,6 +769,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Generating your diet with AI...'**
   String get generatingDiet;
+
+  /// No description provided for @goingBackToStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Going back to step 1...'**
+  String get goingBackToStep1;
 
   /// No description provided for @analyzingPreferences.
   ///

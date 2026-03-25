@@ -17,11 +17,17 @@ class AdService {
   static const _bannerAndroidProd = 'ca-app-pub-3923796247100081/7952635147';
   static const _bannerIosProd     = _bannerIosTest; // no se publica en iOS
 
-  // ── Rewarded Ad Unit IDs ──
-  static const _rewardedAndroidTest = 'ca-app-pub-3940256099942544/5224354917';
-  static const _rewardedIosTest     = 'ca-app-pub-3940256099942544/1712485313';
-  static const _rewardedAndroidProd = 'ca-app-pub-3923796247100081/5776930342';
-  static const _rewardedIosProd     = _rewardedIosTest; // no se publica en iOS
+  // ── Rewarded Ad Unit IDs (comentado por si se usa en el futuro) ──
+  // static const _rewardedAndroidTest = 'ca-app-pub-3940256099942544/5224354917';
+  // static const _rewardedIosTest     = 'ca-app-pub-3940256099942544/1712485313';
+  // static const _rewardedAndroidProd = 'ca-app-pub-3923796247100081/5776930342';
+  // static const _rewardedIosProd     = _rewardedIosTest;
+
+  // ── Interstitial Ad Unit IDs ──
+  static const _interstitialAndroidTest = 'ca-app-pub-3940256099942544/1033173712';
+  static const _interstitialIosTest     = 'ca-app-pub-3940256099942544/4411468910';
+  static const _interstitialAndroidProd = 'ca-app-pub-3923796247100081/4229621364';
+  static const _interstitialIosProd     = _interstitialIosTest; // no se publica en iOS
 
   // ── App Open Ad Unit IDs ──
   static const _appOpenAndroidTest = 'ca-app-pub-3940256099942544/9257395921';
@@ -36,11 +42,11 @@ class AdService {
     return Platform.isAndroid ? _bannerAndroidProd : _bannerIosProd;
   }
 
-  String get rewardedAdUnitId {
+  String get interstitialAdUnitId {
     if (_useTestIds) {
-      return Platform.isAndroid ? _rewardedAndroidTest : _rewardedIosTest;
+      return Platform.isAndroid ? _interstitialAndroidTest : _interstitialIosTest;
     }
-    return Platform.isAndroid ? _rewardedAndroidProd : _rewardedIosProd;
+    return Platform.isAndroid ? _interstitialAndroidProd : _interstitialIosProd;
   }
 
   String get appOpenAdUnitId {
@@ -50,9 +56,9 @@ class AdService {
     return Platform.isAndroid ? _appOpenAndroidProd : _appOpenIosProd;
   }
 
-  RewardedAd? _rewardedAd;
+  InterstitialAd? _interstitialAd;
   AppOpenAd? _appOpenAd;
-  bool get isRewardedAdReady => !kIsWeb && _rewardedAd != null;
+  bool get isInterstitialAdReady => !kIsWeb && _interstitialAd != null;
   bool get isAppOpenAdReady => !kIsWeb && _appOpenAd != null;
 
   // ── Inicialización ──
@@ -80,49 +86,114 @@ class AdService {
     );
   }
 
-  // ── Rewarded ──
+  // ── Interstitial ──
 
-  void loadRewarded() {
+  void loadInterstitial() {
     if (kIsWeb) return;
-    RewardedAd.load(
-      adUnitId: rewardedAdUnitId,
+    InterstitialAd.load(
+      adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
+      adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          _rewardedAd = ad;
+          _interstitialAd = ad;
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
               ad.dispose();
-              _rewardedAd = null;
-              loadRewarded();
+              _interstitialAd = null;
+              loadInterstitial();
             },
             onAdFailedToShowFullScreenContent: (ad, error) {
-              debugPrint('Rewarded ad failed to show: $error');
+              debugPrint('Interstitial ad failed to show: $error');
               ad.dispose();
-              _rewardedAd = null;
-              loadRewarded();
+              _interstitialAd = null;
+              loadInterstitial();
             },
           );
         },
         onAdFailedToLoad: (error) {
-          debugPrint('Rewarded ad failed to load: $error');
-          _rewardedAd = null;
+          debugPrint('Interstitial ad failed to load: $error');
+          _interstitialAd = null;
         },
       ),
     );
   }
 
-  /// Shows the rewarded ad. Calls [onRewarded] when user earns reward,
+  /// Shows the interstitial ad. Calls [onDismissed] when the user closes it,
   /// or calls it immediately if no ad is available (graceful fallback).
-  void showRewarded({required VoidCallback onRewarded}) {
-    if (kIsWeb || _rewardedAd == null) {
-      onRewarded();
+  void showInterstitial({required VoidCallback onDismissed}) {
+    if (kIsWeb || _interstitialAd == null) {
+      onDismissed();
       return;
     }
-    _rewardedAd!.show(
-      onUserEarnedReward: (a, b) => onRewarded(),
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _interstitialAd = null;
+        loadInterstitial();
+        onDismissed();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        debugPrint('Interstitial ad failed to show: $error');
+        ad.dispose();
+        _interstitialAd = null;
+        loadInterstitial();
+        onDismissed();
+      },
     );
+    _interstitialAd!.show();
   }
+
+  // ── Rewarded (comentado por si se usa en el futuro) ──
+  //
+  // RewardedAd? _rewardedAd;
+  // bool get isRewardedAdReady => !kIsWeb && _rewardedAd != null;
+  //
+  // String get rewardedAdUnitId {
+  //   if (_useTestIds) {
+  //     return Platform.isAndroid ? _rewardedAndroidTest : _rewardedIosTest;
+  //   }
+  //   return Platform.isAndroid ? _rewardedAndroidProd : _rewardedIosProd;
+  // }
+  //
+  // void loadRewarded() {
+  //   if (kIsWeb) return;
+  //   RewardedAd.load(
+  //     adUnitId: rewardedAdUnitId,
+  //     request: const AdRequest(),
+  //     rewardedAdLoadCallback: RewardedAdLoadCallback(
+  //       onAdLoaded: (ad) {
+  //         _rewardedAd = ad;
+  //         ad.fullScreenContentCallback = FullScreenContentCallback(
+  //           onAdDismissedFullScreenContent: (ad) {
+  //             ad.dispose();
+  //             _rewardedAd = null;
+  //             loadRewarded();
+  //           },
+  //           onAdFailedToShowFullScreenContent: (ad, error) {
+  //             debugPrint('Rewarded ad failed to show: $error');
+  //             ad.dispose();
+  //             _rewardedAd = null;
+  //             loadRewarded();
+  //           },
+  //         );
+  //       },
+  //       onAdFailedToLoad: (error) {
+  //         debugPrint('Rewarded ad failed to load: $error');
+  //         _rewardedAd = null;
+  //       },
+  //     ),
+  //   );
+  // }
+  //
+  // void showRewarded({required VoidCallback onRewarded}) {
+  //   if (kIsWeb || _rewardedAd == null) {
+  //     onRewarded();
+  //     return;
+  //   }
+  //   _rewardedAd!.show(
+  //     onUserEarnedReward: (a, b) => onRewarded(),
+  //   );
+  // }
 
   // ── App Open Ad ──
 

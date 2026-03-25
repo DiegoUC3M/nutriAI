@@ -10,7 +10,7 @@ import 'widgets/main_shell.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AdService.instance.initialize();
-  AdService.instance.loadRewarded();
+  AdService.instance.loadInterstitial();
   AdService.instance.loadAppOpenAd();
   final prefs = await SharedPreferences.getInstance();
   final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       // ONLY FOR DEBUGGING: FORCES SPANISH LOCALE. If you want english, put "en"
-      // locale: const Locale('es'),
+      // locale: const Locale('en'),
       home: SplashScreen(
         nextScreen:
             showOnboarding ? const _OnboardingGate() : const MainShell(),
