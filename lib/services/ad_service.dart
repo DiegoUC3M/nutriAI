@@ -3,12 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Servicio centralizado para gestionar anuncios de AdMob.
+/// En web, los anuncios están deshabilitados (google_mobile_ads no soporta web).
 class AdService {
   AdService._();
   static final instance = AdService._();
 
   // ── Detecta si estamos en entorno de desarrollo ──
-  // En release builds (producción) usa los IDs reales; en debug/simulador los de test.
   static bool get _useTestIds => kDebugMode;
 
   // ── Banner Ad Unit IDs ──
@@ -38,17 +38,19 @@ class AdService {
   }
 
   RewardedAd? _rewardedAd;
-  bool get isRewardedAdReady => _rewardedAd != null;
+  bool get isRewardedAdReady => !kIsWeb && _rewardedAd != null;
 
   // ── Inicialización ──
 
   Future<void> initialize() async {
+    if (kIsWeb) return;
     await MobileAds.instance.initialize();
   }
 
   // ── Banner ──
 
-  BannerAd createBannerAd({required void Function() onLoaded}) {
+  BannerAd? createBannerAd({required void Function() onLoaded}) {
+    if (kIsWeb) return null;
     return BannerAd(
       adUnitId: bannerAdUnitId,
       size: AdSize.banner,
@@ -66,6 +68,7 @@ class AdService {
   // ── Rewarded ──
 
   void loadRewarded() {
+    if (kIsWeb) return;
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
@@ -97,7 +100,7 @@ class AdService {
   /// Shows the rewarded ad. Calls [onRewarded] when user earns reward,
   /// or calls it immediately if no ad is available (graceful fallback).
   void showRewarded({required VoidCallback onRewarded}) {
-    if (_rewardedAd == null) {
+    if (kIsWeb || _rewardedAd == null) {
       onRewarded();
       return;
     }

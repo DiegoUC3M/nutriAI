@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../services/ad_service.dart';
@@ -23,7 +24,8 @@ class _MainShellState extends State<MainShell> {
     super.initState();
     _bannerAd = AdService.instance.createBannerAd(
       onLoaded: () => setState(() => _isBannerReady = true),
-    )..load();
+    );
+    _bannerAd?.load();
   }
 
   @override

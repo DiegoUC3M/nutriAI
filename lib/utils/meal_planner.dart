@@ -324,6 +324,7 @@ class MealPlanner {
         food.proteinForGrams(grams),
         food.fatForGrams(grams),
         food.caloriesForGrams(grams),
+        grams: grams,
       );
     }).toList();
   }
@@ -362,7 +363,7 @@ class MealPlanner {
       final newProtein = item.protein * adjustFactor;
       final newFat = item.fat * adjustFactor;
       final newCal = (newProtein * 4 + newCarbs * 4 + newFat * 9).round();
-      return MealItem(item.name, newCarbs, newProtein, newFat, newCal);
+      return MealItem(item.name, newCarbs, newProtein, newFat, newCal, grams: item.grams * adjustFactor);
     }).toList();
 
     meals[meals.length - 1] = Meal(name: lastMeal.name, items: adjustedItems);

@@ -503,11 +503,12 @@ class MealItem {
   final double protein;
   final double fat;
   final int calories;
+  final double grams;
 
-  const MealItem(this.name, this.carbs, this.protein, this.fat, this.calories);
+  const MealItem(this.name, this.carbs, this.protein, this.fat, this.calories, {this.grams = 0});
 
   Map<String, dynamic> toJson() => {
-    'name': name, 'carbs': carbs, 'protein': protein, 'fat': fat, 'calories': calories,
+    'name': name, 'carbs': carbs, 'protein': protein, 'fat': fat, 'calories': calories, 'grams': grams,
   };
 
   factory MealItem.fromJson(Map<String, dynamic> j) => MealItem(
@@ -516,6 +517,7 @@ class MealItem {
     (j['protein'] as num).toDouble(),
     (j['fat'] as num).toDouble(),
     (j['calories'] as num).toInt(),
+    grams: (j['grams'] as num?)?.toDouble() ?? 0,
   );
 }
 
