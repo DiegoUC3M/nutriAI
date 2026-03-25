@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../services/ad_service.dart';
 import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -72,17 +73,28 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward().then((_) {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, a1, a2) => widget.nextScreen,
-            transitionDuration: const Duration(milliseconds: 300),
-            transitionsBuilder: (context, animation, a2, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-          ),
+        // Show App Open Ad, then navigate
+        AdService.instance.showAppOpenAd(
+          onDismissed: () {
+            if (mounted) {
+              _navigateToNextScreen();
+            }
+          },
         );
       }
     });
+  }
+
+  void _navigateToNextScreen() {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, a1, a2) => widget.nextScreen,
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, a2, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
   }
 
   @override

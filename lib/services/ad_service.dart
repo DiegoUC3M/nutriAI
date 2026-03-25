@@ -23,6 +23,12 @@ class AdService {
   static const _rewardedAndroidProd = 'ca-app-pub-3923796247100081/5776930342';
   static const _rewardedIosProd     = _rewardedIosTest; // no se publica en iOS
 
+  // ── App Open Ad Unit IDs ──
+  static const _appOpenAndroidTest = 'ca-app-pub-3940256099942544/9257395921';
+  static const _appOpenIosTest     = 'ca-app-pub-3940256099942544/5575463023';
+  static const _appOpenAndroidProd = 'ca-app-pub-3923796247100081/8234780135';
+  static const _appOpenIosProd     = _appOpenIosTest; // no se publica en iOS
+
   String get bannerAdUnitId {
     if (_useTestIds) {
       return Platform.isAndroid ? _bannerAndroidTest : _bannerIosTest;
@@ -37,8 +43,17 @@ class AdService {
     return Platform.isAndroid ? _rewardedAndroidProd : _rewardedIosProd;
   }
 
+  String get appOpenAdUnitId {
+    if (_useTestIds) {
+      return Platform.isAndroid ? _appOpenAndroidTest : _appOpenIosTest;
+    }
+    return Platform.isAndroid ? _appOpenAndroidProd : _appOpenIosProd;
+  }
+
   RewardedAd? _rewardedAd;
+  AppOpenAd? _appOpenAd;
   bool get isRewardedAdReady => !kIsWeb && _rewardedAd != null;
+  bool get isAppOpenAdReady => !kIsWeb && _appOpenAd != null;
 
   // ── Inicialización ──
 
@@ -107,5 +122,47 @@ class AdService {
     _rewardedAd!.show(
       onUserEarnedReward: (a, b) => onRewarded(),
     );
+  }
+
+  // ── App Open Ad ──
+
+  void loadAppOpenAd() {
+    if (kIsWeb) return;
+    AppOpenAd.load(
+      adUnitId: appOpenAdUnitId,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          _appOpenAd = ad;
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint('App Open Ad failed to load: $error');
+          _appOpenAd = null;
+        },
+      ),
+    );
+  }
+
+  /// Shows the app open ad. Calls [onDismissed] when the user closes it
+  /// or immediately if no ad is available.
+  void showAppOpenAd({required VoidCallback onDismissed}) {
+    if (kIsWeb || _appOpenAd == null) {
+      onDismissed();
+      return;
+    }
+    _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _appOpenAd = null;
+        onDismissed();
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        debugPrint('App Open Ad failed to show: $error');
+        ad.dispose();
+        _appOpenAd = null;
+        onDismissed();
+      },
+    );
+    _appOpenAd!.show();
   }
 }

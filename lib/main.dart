@@ -11,6 +11,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AdService.instance.initialize();
   AdService.instance.loadRewarded();
+  AdService.instance.loadAppOpenAd();
   final prefs = await SharedPreferences.getInstance();
   final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
   runApp(MyApp(showOnboarding: !onboardingDone));
