@@ -3,6 +3,10 @@ import '../../../l10n/app_localizations.dart';
 import '../../../theme/app_theme.dart';
 
 class StepMacrosConfig extends StatelessWidget {
+  static const proteinRange = (min: 50.0, max: 350.0);
+  static const carbsRange = (min: 50.0, max: 500.0);
+  static const fatRange = (min: 20.0, max: 200.0);
+
   final bool autoMacros;
   final double protein;
   final double carbs;
@@ -314,8 +318,8 @@ class StepMacrosConfig extends StatelessWidget {
           value: protein,
           unit: 'g',
           color: AppColors.secondary,
-          min: 50,
-          max: 350,
+          min: proteinRange.min,
+          max: proteinRange.max,
           info: '${(protein * 4).round()} kcal',
           onChanged: onProteinChanged,
         ),
@@ -327,8 +331,8 @@ class StepMacrosConfig extends StatelessWidget {
           value: carbs,
           unit: 'g',
           color: AppColors.primary,
-          min: 50,
-          max: 500,
+          min: carbsRange.min,
+          max: carbsRange.max,
           info: '${(carbs * 4).round()} kcal',
           onChanged: onCarbsChanged,
         ),
@@ -340,8 +344,8 @@ class StepMacrosConfig extends StatelessWidget {
           value: fat,
           unit: 'g',
           color: AppColors.warning,
-          min: 20,
-          max: 200,
+          min: fatRange.min,
+          max: fatRange.max,
           info: '${(fat * 9).round()} kcal',
           onChanged: onFatChanged,
         ),

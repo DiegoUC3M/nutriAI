@@ -420,7 +420,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                           if (v) {
                             _recalculateAutoMacros();
                           } else {
-                            setState(() {});
+                            const protein = StepMacrosConfig.proteinRange;
+                            const carbs = StepMacrosConfig.carbsRange;
+                            const fat = StepMacrosConfig.fatRange;
+                            setState(() {
+                              _protein = _protein.clamp(protein.min, protein.max);
+                              _carbs = _carbs.clamp(carbs.min, carbs.max);
+                              _fat = _fat.clamp(fat.min, fat.max);
+                            });
                           }
                         },
                         onProteinChanged: (v) => setState(() => _protein = v),
