@@ -1,30 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gym_app/l10n/app_localizations.dart';
 import 'package:gym_app/screens/nutrition/nutrition_flow_screen.dart';
-import 'package:gym_app/utils/meal_planner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   testWidgets('Full nutrition flow generates diet', (tester) async {
-    // Suppress overflow errors from small test viewport
-    final originalOnError = FlutterError.onError;
-    FlutterError.onError = (details) {
-      if (details.toString().contains('overflowed')) return;
-      originalOnError?.call(details);
-    };
-    addTearDown(() => FlutterError.onError = originalOnError);
+    SharedPreferences.setMockInitialValues({});
+    await tester.binding.setSurfaceSize(const Size(800, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
 
     List<DietDay>? capturedDiet;
 
     await tester.pumpWidget(
       MaterialApp(
         theme: ThemeData.dark(),
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: SizedBox(
-            width: 400,
-            height: 800,
-            child: NutritionFlowScreen(
-              onDietChanged: (diet) => capturedDiet = diet,
-            ),
+          body: NutritionFlowScreen(
+            onDietChanged: (diet) => capturedDiet = diet,
           ),
         ),
       ),
@@ -77,11 +73,6 @@ void main() {
     // StepDietResult should show the diet
     expect(find.text('Día 1'), findsOneWidget);
     expect(find.text('Regenerar'), findsOneWidget);
-    expect(find.text('Lista de compra'), findsOneWidget);
-
-    print('SUCCESS: Diet generated with ${capturedDiet!.length} days');
-    for (final day in capturedDiet!) {
-      print('  Day ${day.dayNumber}: ${day.totalCalories} kcal, ${day.meals.length} meals');
-    }
+    expect(find.text('Compra'), findsOneWidget);
   });
 }

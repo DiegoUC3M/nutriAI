@@ -1,7 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gym_app/data/food_database.dart';
 import 'package:gym_app/utils/meal_planner.dart';
-import 'package:gym_app/screens/nutrition/nutrition_flow_screen.dart';
 
 void main() {
   test('MealPlanner.generate produces valid diet', () {
@@ -18,18 +16,10 @@ void main() {
     );
 
     final result = MealPlanner.generate(config);
-    print('Generated ${result.length} days');
     expect(result.length, 7);
 
     for (final day in result) {
-      print('Day ${day.dayNumber}: ${day.meals.length} meals, ${day.totalCalories} kcal, P:${day.totalProtein.round()} C:${day.totalCarbs.round()} F:${day.totalFat.round()}');
       expect(day.meals.length, 5);
-      for (final meal in day.meals) {
-        print('  ${meal.name}: ${meal.items.length} items, ${meal.totalCalories} kcal');
-        for (final item in meal.items) {
-          print('    ${item.name} - P:${item.protein.round()} C:${item.carbs.round()} F:${item.fat.round()} Cal:${item.calories}');
-        }
-      }
     }
   });
 
@@ -47,7 +37,6 @@ void main() {
     );
 
     final result = MealPlanner.generate(config);
-    print('Generated ${result.length} days with favorites');
     expect(result.length, 3);
     for (final day in result) {
       expect(day.meals.length, 3);
