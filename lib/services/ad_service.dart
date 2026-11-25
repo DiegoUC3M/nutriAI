@@ -1,15 +1,17 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Servicio centralizado para gestionar anuncios de AdMob.
-/// En web, los anuncios están deshabilitados (google_mobile_ads no soporta web).
+/// Google Mobile Ads solo se admite en Android e iOS.
 class AdService {
   AdService._();
   static final instance = AdService._();
 
   // ── Detecta si estamos en entorno de desarrollo ──
   static bool get _useTestIds => kDebugMode;
+  static bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
+  static bool get _adsSupported =>
+      !kIsWeb && (_isAndroid || defaultTargetPlatform == TargetPlatform.iOS);
 
   // ── Banner Ad Unit IDs ──
   static const _bannerAndroidTest = 'ca-app-pub-3940256099942544/6300978111';
@@ -37,41 +39,41 @@ class AdService {
 
   String get bannerAdUnitId {
     if (_useTestIds) {
-      return Platform.isAndroid ? _bannerAndroidTest : _bannerIosTest;
+      return _isAndroid ? _bannerAndroidTest : _bannerIosTest;
     }
-    return Platform.isAndroid ? _bannerAndroidProd : _bannerIosProd;
+    return _isAndroid ? _bannerAndroidProd : _bannerIosProd;
   }
 
   String get interstitialAdUnitId {
     if (_useTestIds) {
-      return Platform.isAndroid ? _interstitialAndroidTest : _interstitialIosTest;
+      return _isAndroid ? _interstitialAndroidTest : _interstitialIosTest;
     }
-    return Platform.isAndroid ? _interstitialAndroidProd : _interstitialIosProd;
+    return _isAndroid ? _interstitialAndroidProd : _interstitialIosProd;
   }
 
   String get appOpenAdUnitId {
     if (_useTestIds) {
-      return Platform.isAndroid ? _appOpenAndroidTest : _appOpenIosTest;
+      return _isAndroid ? _appOpenAndroidTest : _appOpenIosTest;
     }
-    return Platform.isAndroid ? _appOpenAndroidProd : _appOpenIosProd;
+    return _isAndroid ? _appOpenAndroidProd : _appOpenIosProd;
   }
 
   InterstitialAd? _interstitialAd;
   AppOpenAd? _appOpenAd;
-  bool get isInterstitialAdReady => !kIsWeb && _interstitialAd != null;
-  bool get isAppOpenAdReady => !kIsWeb && _appOpenAd != null;
+  bool get isInterstitialAdReady => _adsSupported && _interstitialAd != null;
+  bool get isAppOpenAdReady => _adsSupported && _appOpenAd != null;
 
   // ── Inicialización ──
 
   Future<void> initialize() async {
-    if (kIsWeb) return;
+    if (!_adsSupported) return;
     await MobileAds.instance.initialize();
   }
 
   // ── Banner ──
 
   BannerAd? createBannerAd({required void Function() onLoaded}) {
-    if (kIsWeb) return null;
+    if (!_adsSupported) return null;
     return BannerAd(
       adUnitId: bannerAdUnitId,
       size: AdSize.banner,
@@ -89,7 +91,7 @@ class AdService {
   // ── Interstitial ──
 
   void loadInterstitial() {
-    if (kIsWeb) return;
+    if (!_adsSupported) return;
     InterstitialAd.load(
       adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
@@ -121,7 +123,7 @@ class AdService {
   /// Shows the interstitial ad. Calls [onDismissed] when the user closes it,
   /// or calls it immediately if no ad is available (graceful fallback).
   void showInterstitial({required VoidCallback onDismissed}) {
-    if (kIsWeb || _interstitialAd == null) {
+    if (!isInterstitialAdReady) {
       onDismissed();
       return;
     }
@@ -198,7 +200,7 @@ class AdService {
   // ── App Open Ad ──
 
   void loadAppOpenAd() {
-    if (kIsWeb) return;
+    if (!_adsSupported) return;
     AppOpenAd.load(
       adUnitId: appOpenAdUnitId,
       request: const AdRequest(),
@@ -217,7 +219,7 @@ class AdService {
   /// Shows the app open ad. Calls [onDismissed] when the user closes it
   /// or immediately if no ad is available.
   void showAppOpenAd({required VoidCallback onDismissed}) {
-    if (kIsWeb || _appOpenAd == null) {
+    if (!isAppOpenAdReady) {
       onDismissed();
       return;
     }
