@@ -97,8 +97,6 @@ class _StepAllergiesState extends State<StepAllergies> {
                           if (isExpandable) {
                             setState(() => _expandedAllergen = tag);
                           }
-                        } else if (isExpandable && !isExpanded) {
-                          setState(() => _expandedAllergen = tag);
                         } else {
                           widget.allergies.remove(tag);
                           for (final f in affectedFoods) {
@@ -111,13 +109,10 @@ class _StepAllergiesState extends State<StepAllergies> {
                           }
                         }
                       },
-                      onLongPress: isActive && isExpandable
-                          ? () {
-                              // Toggle expand/collapse without deactivating
-                              setState(() {
-                                _expandedAllergen = isExpanded ? null : tag;
-                              });
-                            }
+                      onToggleDetails: isActive && isExpandable
+                          ? () => setState(() {
+                              _expandedAllergen = isExpanded ? null : tag;
+                            })
                           : null,
                     );
                   }).toList(),
@@ -282,7 +277,7 @@ class _AllergyChip extends StatelessWidget {
   final bool isExpanded;
   final int affectedCount;
   final VoidCallback onTap;
-  final VoidCallback? onLongPress;
+  final VoidCallback? onToggleDetails;
 
   const _AllergyChip({
     required this.tag,
@@ -293,14 +288,14 @@ class _AllergyChip extends StatelessWidget {
     this.isExpanded = false,
     required this.affectedCount,
     required this.onTap,
-    this.onLongPress,
+    this.onToggleDetails,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      onLongPress: onLongPress,
+      onLongPress: onToggleDetails,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -347,9 +342,15 @@ class _AllergyChip extends StatelessWidget {
             ],
             if (isActive && isExpandable) ...[
               const SizedBox(width: 4),
-              Icon(
-                isExpanded ? Icons.expand_less : Icons.expand_more,
-                size: 16,
+              IconButton(
+                onPressed: onToggleDetails,
+                tooltip: isExpanded
+                    ? MaterialLocalizations.of(context).expandedIconTapHint
+                    : MaterialLocalizations.of(context).collapsedIconTapHint,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                icon: Icon(isExpanded ? Icons.expand_less : Icons.expand_more),
+                iconSize: 16,
                 color: color,
               ),
             ],
