@@ -23,6 +23,7 @@ class FoodItem {
   final int caloriesPer100g;
   final Set<String> allergenTags;
   final double defaultServingG;
+  final double? gramsPerUnit;
   final String defaultUnit; // 'g', 'ml', 'ud'
 
   const FoodItem({
@@ -35,6 +36,7 @@ class FoodItem {
     required this.caloriesPer100g,
     this.allergenTags = const {},
     this.defaultServingG = 100,
+    this.gramsPerUnit,
     this.defaultUnit = 'g',
   });
 
@@ -74,8 +76,8 @@ const foodDatabase = <FoodItem>[
   FoodItem(name: 'Chirlas',    category: FoodCategory.protein, displayGroup: DisplayGroup.marisco, proteinPer100g: 12.8, carbsPer100g: 2.2,  fatPer100g: 0.6,  caloriesPer100g: 56,  allergenTags: {'Mariscos'}, defaultServingG: 150),
 
   // ── Huevos ─────────────────────────────────────────────────
-  FoodItem(name: 'Huevos',     category: FoodCategory.protein, displayGroup: DisplayGroup.carne, proteinPer100g: 13.0, carbsPer100g: 1.1,  fatPer100g: 11.0, caloriesPer100g: 155, allergenTags: {'Huevo'}, defaultServingG: 120, defaultUnit: 'ud'),
-  FoodItem(name: 'Claras de huevo', category: FoodCategory.protein, displayGroup: DisplayGroup.carne, proteinPer100g: 11.0, carbsPer100g: 0.7, fatPer100g: 0.2, caloriesPer100g: 52, allergenTags: {'Huevo'}, defaultServingG: 150, defaultUnit: 'ud'),
+  FoodItem(name: 'Huevos',     category: FoodCategory.protein, displayGroup: DisplayGroup.carne, proteinPer100g: 13.0, carbsPer100g: 1.1,  fatPer100g: 11.0, caloriesPer100g: 155, allergenTags: {'Huevo'}, defaultServingG: 120, gramsPerUnit: 50, defaultUnit: 'ud'),
+  FoodItem(name: 'Claras de huevo', category: FoodCategory.protein, displayGroup: DisplayGroup.carne, proteinPer100g: 11.0, carbsPer100g: 0.7, fatPer100g: 0.2, caloriesPer100g: 52, allergenTags: {'Huevo'}, defaultServingG: 150),
 
   // ── Legumbres ──────────────────────────────────────────────
   FoodItem(name: 'Lentejas',   category: FoodCategory.protein, displayGroup: DisplayGroup.legumbre, proteinPer100g: 9.0,  carbsPer100g: 20.0, fatPer100g: 0.4,  caloriesPer100g: 116, defaultServingG: 180),

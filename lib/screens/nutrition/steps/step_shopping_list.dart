@@ -302,7 +302,7 @@ class _StepShoppingListState extends State<StepShoppingList> {
     final result = <String, List<_ShoppingEntry>>{};
     for (final entry in aggregated.entries) {
       final data = entry.value;
-      final quantity = _formatQuantity(data);
+      final quantity = _formatQuantity(entry.key, data);
       result.putIfAbsent(data.category, () => []);
       result[data.category]!.add(_ShoppingEntry(entry.key, quantity));
     }
@@ -390,14 +390,19 @@ class _StepShoppingListState extends State<StepShoppingList> {
     return 'g';
   }
 
-  String _formatQuantity(_AggregatedItem data) {
+  String _formatQuantity(String name, _AggregatedItem data) {
     final totalAmount = data.totalGrams;
     if (data.unit == 'ud') {
+      final food = foodByName[name]!;
+      final gramsPerUnit = food.gramsPerUnit ?? food.defaultServingG;
+      final count = totalAmount > 0
+          ? (totalAmount / gramsPerUnit).ceil()
+          : data.count;
       final locale = Localizations.localeOf(context);
       if (locale.languageCode == 'en') {
-        return '${data.count} ${data.count == 1 ? 'unit' : 'units'}';
+        return '$count ${count == 1 ? 'unit' : 'units'}';
       }
-      return '${data.count} ${data.count == 1 ? 'unidad' : 'unidades'}';
+      return '$count ${count == 1 ? 'unidad' : 'unidades'}';
     }
     if (data.unit == 'ml') {
       if (totalAmount >= 1000) return '${(totalAmount / 1000).toStringAsFixed(1)} L';
