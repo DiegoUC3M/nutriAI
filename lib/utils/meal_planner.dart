@@ -386,9 +386,10 @@ class MealPlanner {
     final adjustedItems = lastMeal.items.map((item) {
       final adjustFactor = ratio.clamp(0.7, 1.4);
       final newGrams = ((item.grams * adjustFactor) / 5).round() * 5.0;
-      final newCarbs = item.carbs * adjustFactor;
-      final newProtein = item.protein * adjustFactor;
-      final newFat = item.fat * adjustFactor;
+      final portionRatio = newGrams / item.grams;
+      final newCarbs = item.carbs * portionRatio;
+      final newProtein = item.protein * portionRatio;
+      final newFat = item.fat * portionRatio;
       final newCal = (newProtein * 4 + newCarbs * 4 + newFat * 9).round();
       final newName = item.name.replaceFirstMapped(
         RegExp(r'\((\d+)g\)'),
