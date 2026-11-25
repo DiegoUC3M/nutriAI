@@ -72,11 +72,16 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     final json = prefs.getString('saved_diet');
     if (json == null) return;
     try {
-      final list = jsonDecode(json) as List;
+      final saved = jsonDecode(json);
+      final list = (saved is List ? saved : saved['diet']) as List;
+      final config = saved is List
+          ? null
+          : MealPlanConfig.fromJson(saved['config'] as Map<String, dynamic>);
       final days = list.map((d) => DietDay.fromJson(d as Map<String, dynamic>)).toList();
       if (!mounted || days.isEmpty) return;
       setState(() {
         _dietResult = days;
+        _savedPlanConfig = config;
         _currentStep = 6;
       });
       widget.onDietChanged?.call(_dietResult);
@@ -85,13 +90,18 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     }
   }
 
-  Future<void> _saveDiet(List<DietDay>? diet) async {
+  Future<void> _saveDiet(List<DietDay> diet, MealPlanConfig config) async {
+    final json = jsonEncode({
+      'diet': diet.map((d) => d.toJson()).toList(),
+      'config': config.toJson(),
+    });
     final prefs = await SharedPreferences.getInstance();
-    if (diet == null) {
-      await prefs.remove('saved_diet');
-    } else {
-      await prefs.setString('saved_diet', jsonEncode(diet.map((d) => d.toJson()).toList()));
-    }
+    await prefs.setString('saved_diet', json);
+  }
+
+  Future<void> _clearSavedDiet() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('saved_diet');
   }
 
   void _recalculateAutoMacros() {
@@ -120,6 +130,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
 
   // Resultado
   List<DietDay>? _dietResult;
+  MealPlanConfig? _savedPlanConfig;
   bool _isGenerating = false;
   String? _loadingMessage;
 
@@ -165,7 +176,18 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
       _dietResult = null;
       _loadingMessage = null;
     });
-    _generateDiet();
+    _generateDiet(MealPlanConfig(
+      targetProtein: _protein,
+      targetCarbs: _carbs,
+      targetFat: _fat,
+      days: _days,
+      mealsPerDay: _mealsPerDay,
+      varietyLevel: _varietyLevel,
+      favorites: Set.of(_favoritesFoods),
+      allergies: Set.of(_allergies),
+      allergyExceptions: Set.of(_allergyExceptions),
+      disliked: Set.of(_dislikedFoods),
+    ));
   }
 
   void _checkPoolAndGenerate() {
@@ -271,7 +293,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
     });
   }
 
-  void _generateDiet() {
+  void _generateDiet(MealPlanConfig config) {
     setState(() {
       _isGenerating = true;
       _dietResult = null;
@@ -281,28 +303,16 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
       if (!mounted) return;
 
       try {
-        final config = MealPlanConfig(
-          targetProtein: _protein,
-          targetCarbs: _carbs,
-          targetFat: _fat,
-          days: _days,
-          mealsPerDay: _mealsPerDay,
-          varietyLevel: _varietyLevel,
-          favorites: _favoritesFoods,
-          allergies: _allergies,
-          allergyExceptions: _allergyExceptions,
-          disliked: _dislikedFoods,
-        );
-
         final result = MealPlanner.generate(config);
 
         if (!mounted) return;
         setState(() {
           _dietResult = result;
+          _savedPlanConfig = config;
           _isGenerating = false;
         });
         widget.onDietChanged?.call(_dietResult);
-        _saveDiet(_dietResult);
+        _saveDiet(result, config);
       } catch (e) {
         if (!mounted) return;
         debugPrint('Error generating diet: $e');
@@ -322,6 +332,7 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final savedPlanConfig = _savedPlanConfig;
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
@@ -469,11 +480,12 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                         onDismissed: () {
                           Future.delayed(const Duration(milliseconds: 800), () {
                             if (!mounted) return;
-                            _saveDiet(null);
+                            _clearSavedDiet();
                             _pageController.dispose();
                             _pageController = PageController();
                             setState(() {
                               _dietResult = null;
+                              _savedPlanConfig = null;
                               _isGenerating = false;
                               _currentStep = 0;
                             });
@@ -481,14 +493,14 @@ class _NutritionFlowScreenState extends State<NutritionFlowScreen> {
                         },
                       );
                     },
-                    onNewDiet: () {
+                    onNewDiet: savedPlanConfig == null ? null : () {
                       setState(() {
                         _isGenerating = true;
                         _dietResult = null;
                         _loadingMessage = null;
                       });
                       AdService.instance.showInterstitial(
-                        onDismissed: _generateDiet,
+                        onDismissed: () => _generateDiet(savedPlanConfig),
                       );
                     },
                     onGoToShoppingList: () {

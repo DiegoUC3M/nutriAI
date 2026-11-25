@@ -9,7 +9,7 @@ class StepDietResult extends StatefulWidget {
   final bool isGenerating;
   final String? loadingMessage;
   final VoidCallback onRegenerate;
-  final VoidCallback onNewDiet;
+  final VoidCallback? onNewDiet;
   final VoidCallback onGoToShoppingList;
 
   const StepDietResult({

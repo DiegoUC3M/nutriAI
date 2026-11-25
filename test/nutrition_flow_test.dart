@@ -75,4 +75,49 @@ void main() {
     expect(find.text('Regenerar'), findsOneWidget);
     expect(find.text('Compra'), findsOneWidget);
   });
+
+  testWidgets('Regenerating after reload keeps the saved plan settings', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.binding.setSurfaceSize(const Size(800, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    List<DietDay>? diet;
+    final app = MaterialApp(
+      locale: const Locale('es'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: NutritionFlowScreen(onDietChanged: (value) => diet = value),
+    );
+    await tester.pumpWidget(app);
+    await tester.tap(find.text('Pescado'));
+    await tester.pumpAndSettle();
+
+    for (var i = 0; i < 4; i++) {
+      await tester.tap(find.text('Continuar'));
+      await tester.pumpAndSettle();
+    }
+    tester.widget<Slider>(find.byType(Slider)).onChanged!(2);
+    await tester.pump();
+    await tester.tap(find.text('Continuar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Generar Dieta'));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(diet, hasLength(2));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    diet = null;
+    await tester.pumpWidget(app);
+    await tester.pumpAndSettle();
+    expect(diet, hasLength(2));
+
+    await tester.tap(find.text('Regenerar'));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(diet, hasLength(2));
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('saved_diet'), contains('"allergies":["Pescado"]'));
+  });
 }

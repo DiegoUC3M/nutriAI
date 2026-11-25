@@ -32,6 +32,32 @@ class MealPlanConfig {
 
   int get targetCalories =>
       (targetProtein * 4 + targetCarbs * 4 + targetFat * 9).round();
+
+  Map<String, dynamic> toJson() => {
+    'targetProtein': targetProtein,
+    'targetCarbs': targetCarbs,
+    'targetFat': targetFat,
+    'days': days,
+    'mealsPerDay': mealsPerDay,
+    'varietyLevel': varietyLevel,
+    'favorites': favorites.toList(),
+    'allergies': allergies.toList(),
+    'allergyExceptions': allergyExceptions.toList(),
+    'disliked': disliked.toList(),
+  };
+
+  factory MealPlanConfig.fromJson(Map<String, dynamic> json) => MealPlanConfig(
+    targetProtein: (json['targetProtein'] as num).toDouble(),
+    targetCarbs: (json['targetCarbs'] as num).toDouble(),
+    targetFat: (json['targetFat'] as num).toDouble(),
+    days: json['days'] as int,
+    mealsPerDay: json['mealsPerDay'] as int,
+    varietyLevel: json['varietyLevel'] as String,
+    favorites: Set<String>.from(json['favorites'] as List),
+    allergies: Set<String>.from(json['allergies'] as List),
+    allergyExceptions: Set<String>.from(json['allergyExceptions'] as List),
+    disliked: Set<String>.from(json['disliked'] as List),
+  );
 }
 
 // ─── Tipos internos ──────────────────────────────────────────────
