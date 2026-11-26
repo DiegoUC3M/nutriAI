@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'SHOPPING'**
   String get tabShopping;
 
+  /// No description provided for @adPrivacyOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy options'**
+  String get adPrivacyOptions;
+
   /// No description provided for @shoppingListTitle.
   ///
   /// In en, this message translates to:
