@@ -85,18 +85,21 @@ class _Portion {
   late _MealBudget budget;
   int steps;
 
-  _Portion(this.food, double grams, {this.optional = false})
+  _Portion(this.food, double grams, {this.optional = false, double? maxGrams})
     : perStep = [
         food.proteinForGrams(stepGrams) * 4,
         food.carbsForGrams(stepGrams) * 4,
         food.fatForGrams(stepGrams) * 9,
         food.caloriesPer100g * (stepGrams / 100) * calorieWeight,
       ],
-      maxSteps = switch (food.category) {
-        FoodCategory.fat => 12,
-        FoodCategory.protein => 70,
-        _ => 50,
-      },
+      maxSteps = min(
+        switch (food.category) {
+          FoodCategory.fat => 12,
+          FoodCategory.protein => 70,
+          _ => 50,
+        },
+        maxGrams == null ? 70 : (maxGrams / stepGrams).floor(),
+      ),
       steps = (grams / stepGrams).round() {
     if (!optional) steps = steps.clamp(minServingSteps, maxSteps);
   }
@@ -435,9 +438,12 @@ class MealPlanner {
       var bestGain = 0.0;
       List<int>? bestAdjustedSteps;
       for (final food in pool) {
-        final candidate = _Portion(food, 0, optional: true);
-        final meal = _mealForExtra(food, meals, slots, availableMeals, config);
+        final meal = _mealForExtra(food, meals, slots, availableMeals, pool, config);
         if (meal == null) continue;
+        final candidate = _Portion(
+          food, 0, optional: true,
+          maxGrams: slots[meal].type == _MealType.snack ? food.defaultServingG : null,
+        );
         candidate.budget = budgets[meal];
         if (hasExcess) {
           final trial = [...remaining];
@@ -498,11 +504,13 @@ class MealPlanner {
     List<List<_Portion>> meals,
     List<_MealSlot> slots,
     List<int> availableMeals,
+    List<FoodItem> pool,
     MealPlanConfig config,
   ) {
     int? bestMeal;
     var largestGap = double.negativeInfinity;
     for (final i in availableMeals) {
+      if (!_canSupplement(food, slots[i].type, pool)) continue;
       if (meals[i].any((portion) => portion.food == food)) continue;
       final calories = meals[i].fold(0, (sum, portion) =>
           sum + portion.food.caloriesForGrams(portion.grams));
@@ -513,6 +521,31 @@ class MealPlanner {
       }
     }
     return bestMeal;
+  }
+
+  static bool _canSupplement(FoodItem food, _MealType type, List<FoodItem> pool) {
+    final category = food.category;
+    switch (type) {
+      case _MealType.breakfast:
+        return switch (category) {
+          FoodCategory.protein => _breakfastProteins.contains(food.name) ||
+              !pool.any((food) => _breakfastProteins.contains(food.name)),
+          FoodCategory.carb => _breakfastCarbs.contains(food.name) ||
+              !pool.any((food) => _breakfastCarbs.contains(food.name)),
+          FoodCategory.fruit || FoodCategory.dairy => true,
+          _ => false,
+        };
+      case _MealType.snack:
+        return category == FoodCategory.fruit ||
+            category == FoodCategory.dairy ||
+            category == FoodCategory.fat;
+      case _MealType.mainMeal:
+      case _MealType.lightDinner:
+        return category == FoodCategory.protein ||
+            category == FoodCategory.carb ||
+            category == FoodCategory.vegetable ||
+            category == FoodCategory.fat;
+    }
   }
 
   static double _squaredError(List<double> remaining) =>

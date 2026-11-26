@@ -85,6 +85,24 @@ void main() {
     expect(snack.totalCalories, inInclusiveRange(78, 168));
   });
 
+  test('Supplemental snack foods are suitable and snack-sized', () {
+    final day = MealPlanner.generate(
+      _config(300, 30, 20, mealsPerDay: 4),
+      random: Random(0),
+    ).single;
+    final snack = day.meals.singleWhere((meal) => meal.name == 'Merienda');
+    expect(snack.items, isNotEmpty);
+    for (final item in snack.items) {
+      final food = foodByName[item.name.split(' (').first]!;
+      expect(
+        food.category,
+        isIn([FoodCategory.fruit, FoodCategory.dairy, FoodCategory.fat]),
+        reason: item.name,
+      );
+      expect(item.grams, lessThanOrEqualTo(food.defaultServingG));
+    }
+  });
+
   test('MealPlanner.generate produces valid diet', () {
     final config = MealPlanConfig(
       targetProtein: 150.0,
