@@ -6,25 +6,30 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:gym_app/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('App launches without crashing', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
+    tester.binding.platformDispatcher.localesTestValue = const [Locale('es')];
+    addTearDown(tester.binding.platformDispatcher.clearLocalesTestValue);
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    const adsChannel = 'plugins.flutter.io/google_mobile_ads';
+    final messenger = tester.binding.defaultBinaryMessenger;
+    messenger.setMockMessageHandler(
+      adsChannel,
+      (_) async => const StandardMethodCodec().encodeSuccessEnvelope(null),
+    );
+    addTearDown(() => messenger.setMockMessageHandler(adsChannel, null));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpWidget(const MyApp(showOnboarding: false));
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify the app renders the bottom navigation
+    expect(find.text('NUTRICIÓN'), findsOneWidget);
   });
 }
