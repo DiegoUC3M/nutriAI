@@ -65,6 +65,16 @@ void main() {
     }
   });
 
+  test('Daily fitting corrects fat overshoot without a macro deficit', () {
+    final day = MealPlanner.generate(
+      _config(150, 90, 30),
+      random: Random(46),
+    ).single;
+    expect(day.totalFat, closeTo(30, 5));
+    expect(day.totalProtein, closeTo(150, 5));
+    expect(day.totalCarbs, closeTo(90, 5));
+  });
+
   test('MealPlanner.generate produces valid diet', () {
     final config = MealPlanConfig(
       targetProtein: 150.0,

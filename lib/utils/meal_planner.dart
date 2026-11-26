@@ -405,17 +405,47 @@ class MealPlanner {
     }
     _fitPortions(portions, remaining);
 
-    // If the chosen foods cannot supply a missing macro, add at most one
-    // portion per meal from the same allergy- and preference-filtered pool.
+    // One extra per meal can address a deficit or displace a source of excess.
     final availableMeals = List.generate(meals.length, (i) => i);
     while (availableMeals.isNotEmpty &&
-        (remaining[0] > 20 || remaining[1] > 20 || remaining[2] > 45)) {
+        (remaining[0].abs() > 20 ||
+            remaining[1].abs() > 20 ||
+            remaining[2].abs() > 45)) {
+      final hasExcess = remaining[0] < -20 ||
+          remaining[1] < -20 ||
+          remaining[2] < -45;
+      final originalSteps = [for (final portion in portions) portion.steps];
       _Portion? best;
       var bestSteps = 0;
       var bestMeal = -1;
       var bestGain = 0.0;
+      List<int>? bestAdjustedSteps;
       for (final food in pool) {
         final candidate = _Portion(food, 0, optional: true);
+        final meal = _mealForExtra(food, meals, slots, availableMeals, config);
+        if (meal == null) continue;
+        if (hasExcess) {
+          final trial = [...remaining];
+          candidate.steps = (food.defaultServingG / _Portion.stepGrams)
+              .round()
+              .clamp(candidate.minServingSteps, candidate.maxSteps);
+          _subtractSteps(trial, candidate, candidate.steps);
+          _fitPortions([...portions, candidate], trial, maxPasses: 16);
+          final gain = _squaredError(remaining) - _squaredError(trial);
+          if (candidate.steps > 0 && gain > 0 &&
+              (gain > bestGain ||
+                  gain == bestGain && config.favorites.contains(food.name))) {
+            best = candidate;
+            bestSteps = candidate.steps;
+            bestMeal = meal;
+            bestGain = gain;
+            bestAdjustedSteps = [for (final portion in portions) portion.steps];
+          }
+          for (var i = 0; i < portions.length; i++) {
+            portions[i].steps = originalSteps[i];
+          }
+          continue;
+        }
         final steps = _bestChange(candidate, remaining);
         var gain = 0.0;
         for (var i = 0; i < remaining.length; i++) {
@@ -423,8 +453,6 @@ class MealPlanner {
           gain += delta * (2 * remaining[i] - delta);
         }
         if (gain < bestGain || gain <= 0) continue;
-        final meal = _mealForExtra(food, meals, slots, availableMeals, config);
-        if (meal == null) continue;
         if (gain == bestGain && !config.favorites.contains(food.name)) continue;
         best = candidate;
         bestSteps = steps;
@@ -432,6 +460,13 @@ class MealPlanner {
         bestGain = gain;
       }
       if (best == null) break;
+      if (bestAdjustedSteps != null) {
+        for (var i = 0; i < portions.length; i++) {
+          final portion = portions[i];
+          _subtractSteps(remaining, portion, bestAdjustedSteps[i] - portion.steps);
+          portion.steps = bestAdjustedSteps[i];
+        }
+      }
       best.steps = bestSteps;
       _subtractSteps(remaining, best, bestSteps);
       meals[bestMeal].add(best);
@@ -463,8 +498,15 @@ class MealPlanner {
     return bestMeal;
   }
 
-  static void _fitPortions(List<_Portion> portions, List<double> remaining) {
-    for (var pass = 0; pass < 60; pass++) {
+  static double _squaredError(List<double> remaining) =>
+      remaining.fold(0.0, (sum, value) => sum + value * value);
+
+  static void _fitPortions(
+    List<_Portion> portions,
+    List<double> remaining, {
+    int maxPasses = 60,
+  }) {
+    for (var pass = 0; pass < maxPasses; pass++) {
       var changed = false;
       for (final portion in portions) {
         final change = _bestChange(portion, remaining);
