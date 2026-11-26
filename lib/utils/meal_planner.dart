@@ -72,6 +72,8 @@ class _MealSlot {
   const _MealSlot(this.name, this.calorieFraction, this.type);
 }
 
+typedef _MealBudget = ({int index, double minCalories, double maxCalories});
+
 class _Portion {
   static const stepGrams = 5.0;
   static const calorieWeight = 0.75;
@@ -80,6 +82,7 @@ class _Portion {
   final List<double> perStep;
   final bool optional;
   final int maxSteps;
+  late _MealBudget budget;
   int steps;
 
   _Portion(this.food, double grams, {this.optional = false})
@@ -100,6 +103,7 @@ class _Portion {
 
   int get minServingSteps => food.category == FoodCategory.fat ? 1 : 4;
   double get grams => steps * stepGrams;
+  double get caloriesPerStep => food.caloriesPer100g * (stepGrams / 100);
 }
 
 // Métodos de cocción para dar variedad a los nombres
@@ -398,7 +402,17 @@ class MealPlanner {
       config.targetCarbs * 4,
       config.targetFat * 9,
       config.targetCalories * _Portion.calorieWeight,
+      for (final _ in meals) 0.0,
     ];
+    final budgets = [
+      for (var i = 0; i < meals.length; i++)
+        _mealBudget(i, meals[i], config.targetCalories * slots[i].calorieFraction),
+    ];
+    for (var i = 0; i < meals.length; i++) {
+      for (final portion in meals[i]) {
+        portion.budget = budgets[i];
+      }
+    }
     final portions = meals.expand((meal) => meal).toList();
     for (final portion in portions) {
       _subtractSteps(remaining, portion, portion.steps);
@@ -424,11 +438,14 @@ class MealPlanner {
         final candidate = _Portion(food, 0, optional: true);
         final meal = _mealForExtra(food, meals, slots, availableMeals, config);
         if (meal == null) continue;
+        candidate.budget = budgets[meal];
         if (hasExcess) {
           final trial = [...remaining];
+          final maxSteps = _mealStepLimits(candidate, remaining).$2;
+          if (maxSteps < candidate.minServingSteps) continue;
           candidate.steps = (food.defaultServingG / _Portion.stepGrams)
               .round()
-              .clamp(candidate.minServingSteps, candidate.maxSteps);
+              .clamp(candidate.minServingSteps, maxSteps);
           _subtractSteps(trial, candidate, candidate.steps);
           _fitPortions([...portions, candidate], trial, maxPasses: 16);
           final gain = _squaredError(remaining) - _squaredError(trial);
@@ -448,7 +465,7 @@ class MealPlanner {
         }
         final steps = _bestChange(candidate, remaining);
         var gain = 0.0;
-        for (var i = 0; i < remaining.length; i++) {
+        for (var i = 0; i < candidate.perStep.length; i++) {
           final delta = candidate.perStep[i] * steps;
           gain += delta * (2 * remaining[i] - delta);
         }
@@ -499,7 +516,28 @@ class MealPlanner {
   }
 
   static double _squaredError(List<double> remaining) =>
-      remaining.fold(0.0, (sum, value) => sum + value * value);
+      remaining.take(4).fold(0.0, (sum, value) => sum + value * value);
+
+  static _MealBudget _mealBudget(int index, List<_Portion> portions, double target) {
+    final initial = portions.fold(
+      0.0, (sum, portion) => sum + portion.steps * portion.caloriesPerStep,
+    );
+    return (
+      index: 4 + index,
+      minCalories: min(initial, 0.65 * target),
+      maxCalories: max(initial, 1.35 * target),
+    );
+  }
+
+  static (int, int) _mealStepLimits(_Portion portion, List<double> remaining) {
+    final budget = portion.budget;
+    final calorieStep = portion.caloriesPerStep;
+    if (calorieStep <= 0) return (0, portion.maxSteps);
+    final otherCalories = remaining[budget.index] - portion.steps * calorieStep;
+    final lower = ((budget.minCalories - otherCalories) / calorieStep - 1e-9).ceil();
+    final upper = ((budget.maxCalories - otherCalories) / calorieStep + 1e-9).floor();
+    return (max(0, lower), min(portion.maxSteps, upper));
+  }
 
   static void _fitPortions(
     List<_Portion> portions,
@@ -522,24 +560,27 @@ class MealPlanner {
   static int _bestChange(_Portion portion, List<double> remaining) {
     var dot = 0.0;
     var square = 0.0;
-    for (var i = 0; i < remaining.length; i++) {
+    for (var i = 0; i < portion.perStep.length; i++) {
       final step = portion.perStep[i];
       dot += remaining[i] * step;
       square += step * step;
     }
     if (square == 0) return 0;
     final idealSteps = portion.steps + dot / square;
-    if (portion.optional && idealSteps <= portion.minServingSteps / 2) {
+    final (mealMin, mealMax) = _mealStepLimits(portion, remaining);
+    final minSteps = max(mealMin, portion.minServingSteps);
+    if (portion.optional && mealMin == 0 &&
+        (mealMax < minSteps || idealSteps <= minSteps / 2)) {
       return -portion.steps;
     }
-    return idealSteps.round().clamp(portion.minServingSteps, portion.maxSteps) -
-        portion.steps;
+    return idealSteps.round().clamp(minSteps, mealMax) - portion.steps;
   }
 
   static void _subtractSteps(List<double> remaining, _Portion portion, int steps) {
-    for (var i = 0; i < remaining.length; i++) {
+    for (var i = 0; i < portion.perStep.length; i++) {
       remaining[i] -= portion.perStep[i] * steps;
     }
+    remaining[portion.budget.index] += portion.caloriesPerStep * steps;
   }
 
   // ─── Selección con peso (favoritos) y variedad ───────────────

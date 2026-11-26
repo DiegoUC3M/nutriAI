@@ -75,6 +75,16 @@ void main() {
     expect(day.totalCarbs, closeTo(90, 5));
   });
 
+  test('Daily fitting keeps the apple snack near its calorie share', () {
+    final day = MealPlanner.generate(
+      _config(150, 90, 30, mealsPerDay: 4),
+      random: Random(58),
+    ).single;
+    final snack = day.meals.singleWhere((meal) => meal.name == 'Merienda');
+    expect(snack.items.any((item) => item.name.startsWith('Manzana ')), isTrue);
+    expect(snack.totalCalories, inInclusiveRange(78, 168));
+  });
+
   test('MealPlanner.generate produces valid diet', () {
     final config = MealPlanConfig(
       targetProtein: 150.0,
@@ -122,12 +132,13 @@ MealPlanConfig _config(
   double carbs,
   double fat, {
   Set<String> disliked = const {},
+  int mealsPerDay = 3,
 }) => MealPlanConfig(
   targetProtein: protein,
   targetCarbs: carbs,
   targetFat: fat,
   days: 1,
-  mealsPerDay: 3,
+  mealsPerDay: mealsPerDay,
   varietyLevel: 'medium',
   favorites: {},
   allergies: {},
