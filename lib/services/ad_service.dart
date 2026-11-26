@@ -63,9 +63,10 @@ class AdService extends ChangeNotifier {
   InterstitialAd? _interstitialAd;
   AppOpenAd? _appOpenAd;
   Future<void>? _startup;
-  bool _mobileAdsInitialized = false;
+  Future<InitializationStatus>? _mobileAdsInitialization;
   bool _privacyOptionsRequired = false;
   bool _showingPrivacyOptions = false;
+  int _privacyOptionsRevision = 0;
   Object? _adSession;
 
   bool get _canLoadAds => _adsSupported && _adSession != null;
@@ -95,24 +96,37 @@ class AdService extends ChangeNotifier {
 
   Future<void> _refreshAdEligibility() async {
     final consent = ConsentInformation.instance;
+    final revision = _privacyOptionsRevision;
     try {
-      _privacyOptionsRequired =
+      final privacyOptionsRequired =
           await consent.getPrivacyOptionsRequirementStatus() ==
           PrivacyOptionsRequirementStatus.required;
+      if (revision != _privacyOptionsRevision) return;
+      _privacyOptionsRequired = privacyOptionsRequired;
     } catch (error) {
       debugPrint('Could not check ad privacy options: $error');
     }
     try {
-      if (await consent.canRequestAds()) {
-        if (!_mobileAdsInitialized) {
-          await MobileAds.instance.initialize();
-          _mobileAdsInitialized = true;
+      final canRequestAds = await consent.canRequestAds();
+      if (revision != _privacyOptionsRevision || _showingPrivacyOptions) return;
+      if (canRequestAds) {
+        final initialization =
+            _mobileAdsInitialization ??= MobileAds.instance.initialize();
+        try {
+          await initialization;
+        } catch (_) {
+          if (_mobileAdsInitialization == initialization) {
+            _mobileAdsInitialization = null;
+          }
+          rethrow;
         }
+        if (revision != _privacyOptionsRevision || _showingPrivacyOptions) return;
         _adSession = Object();
         loadInterstitial();
         loadAppOpenAd();
       }
     } catch (error) {
+      if (revision != _privacyOptionsRevision) return;
       _stopLoadingAds();
       debugPrint('Could not start ads: $error');
     }
@@ -122,13 +136,14 @@ class AdService extends ChangeNotifier {
   Future<void> showPrivacyOptions() async {
     if (!privacyOptionsRequired || _showingPrivacyOptions) return;
     _showingPrivacyOptions = true;
+    _privacyOptionsRevision++;
     _stopLoadingAds();
     notifyListeners();
     try {
       await ConsentForm.showPrivacyOptionsForm((_) {});
     } finally {
-      await _refreshAdEligibility();
       _showingPrivacyOptions = false;
+      await _refreshAdEligibility();
     }
   }
 

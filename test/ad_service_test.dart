@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,22 +47,27 @@ void main() {
       );
       final messenger = tester.binding.defaultBinaryMessenger;
       final calls = <String>[];
-      var canRequestAds = false;
+      var canRequestAds = true;
+      final initialization = Completer<InitializationStatus>();
+      final firstPrivacyForm = Completer<void>();
       messenger.setMockMethodCallHandler(adsChannel, (call) async {
         calls.add(call.method);
         if (call.method == 'MobileAds#initialize') {
-          return InitializationStatus({});
+          return initialization.future;
         }
         return null;
       });
       messenger.setMockMethodCallHandler(umpChannel, (call) async {
         calls.add(call.method);
+        if (call.method == 'UserMessagingPlatform#showPrivacyOptionsForm') {
+          await firstPrivacyForm.future;
+          return null;
+        }
         return switch (call.method) {
           'ConsentInformation#getPrivacyOptionsRequirementStatus' => 1,
           'ConsentInformation#canRequestAds' => canRequestAds,
           'ConsentInformation#requestConsentInfoUpdate' ||
-          'UserMessagingPlatform#loadAndShowConsentFormIfRequired' ||
-          'UserMessagingPlatform#showPrivacyOptionsForm' => null,
+          'UserMessagingPlatform#loadAndShowConsentFormIfRequired' => null,
           _ => throw StateError('Unexpected call: ${call.method}'),
         };
       });
@@ -69,29 +76,45 @@ void main() {
         messenger.setMockMethodCallHandler(umpChannel, null);
       });
 
-      await tester.pumpWidget(
-        const MaterialApp(
-          locale: Locale('es'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: MainShell(),
-        ),
+      Widget app({Key? shellKey}) => MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: MainShell(key: shellKey),
       );
+      await tester.pumpWidget(app());
       final ads = AdService.instance;
       final privacyOptions = find.text('Opciones de privacidad');
       expect(privacyOptions, findsNothing);
       expect(calls, isEmpty);
 
-      await ads.initialize();
+      final startup = ads.initialize();
       await tester.pump();
-      expect(calls, [
+      expect(calls.where((call) => call != '_init'), [
         'ConsentInformation#requestConsentInfoUpdate',
         'UserMessagingPlatform#loadAndShowConsentFormIfRequired',
         'ConsentInformation#getPrivacyOptionsRequirementStatus',
         'ConsentInformation#canRequestAds',
+        'MobileAds#initialize',
       ]);
+      await tester.pumpWidget(app(shellKey: UniqueKey()));
       expect(privacyOptions, findsOneWidget);
       expect(find.text('COMPRA'), findsOneWidget);
+
+      calls.clear();
+      await tester.tap(privacyOptions);
+      await tester.pump();
+      expect(calls, ['UserMessagingPlatform#showPrivacyOptionsForm']);
+      initialization.complete(InitializationStatus({}));
+      await startup;
+      await tester.pump();
+      expect(calls.where((call) => call.startsWith('load')), isEmpty);
+      expect(ads.createBannerAd(onLoaded: () {}), isNull);
+
+      canRequestAds = false;
+      firstPrivacyForm.complete();
+      await tester.pump();
+      expect(calls.where((call) => call.startsWith('load')), isEmpty);
 
       calls.clear();
       canRequestAds = true;
@@ -101,7 +124,6 @@ void main() {
         'UserMessagingPlatform#showPrivacyOptionsForm',
         'ConsentInformation#getPrivacyOptionsRequirementStatus',
         'ConsentInformation#canRequestAds',
-        'MobileAds#initialize',
         'loadInterstitialAd',
         'loadAppOpenAd',
         'loadBannerAd',
