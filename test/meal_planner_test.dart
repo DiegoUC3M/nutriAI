@@ -103,6 +103,18 @@ void main() {
     }
   });
 
+  test('Oil-only snacks do not force the six-meal plan over its fat target', () {
+    final disliked = foodDatabase
+        .map((food) => food.name)
+        .toSet()
+        .difference({'Pavo', 'Arroz', 'Aceite de oliva'});
+    final day = MealPlanner.generate(
+      _config(150, 150, 30, mealsPerDay: 6, disliked: disliked),
+      random: Random(0),
+    ).single;
+    expect(day.totalFat, closeTo(30, 5));
+  });
+
   test('MealPlanner.generate produces valid diet', () {
     final config = MealPlanConfig(
       targetProtein: 150.0,

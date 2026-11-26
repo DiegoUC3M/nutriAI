@@ -409,7 +409,7 @@ class MealPlanner {
     ];
     final budgets = [
       for (var i = 0; i < meals.length; i++)
-        _mealBudget(i, meals[i], config.targetCalories * slots[i].calorieFraction),
+        _mealBudget(i, meals[i], slots[i], config.targetCalories),
     ];
     for (var i = 0; i < meals.length; i++) {
       for (final portion in meals[i]) {
@@ -551,13 +551,23 @@ class MealPlanner {
   static double _squaredError(List<double> remaining) =>
       remaining.take(4).fold(0.0, (sum, value) => sum + value * value);
 
-  static _MealBudget _mealBudget(int index, List<_Portion> portions, double target) {
+  static _MealBudget _mealBudget(
+    int index,
+    List<_Portion> portions,
+    _MealSlot slot,
+    int dailyCalories,
+  ) {
+    final target = dailyCalories * slot.calorieFraction;
     final initial = portions.fold(
       0.0, (sum, portion) => sum + portion.steps * portion.caloriesPerStep,
     );
+    final oilOnlySnack = slot.type == _MealType.snack &&
+        portions.every((portion) =>
+            portion.food.category == FoodCategory.fat &&
+            portion.food.defaultUnit == 'ml');
     return (
       index: 4 + index,
-      minCalories: min(initial, 0.65 * target),
+      minCalories: oilOnlySnack ? 0.0 : min(initial, 0.65 * target),
       maxCalories: max(initial, 1.35 * target),
     );
   }
