@@ -20,6 +20,7 @@
 
   "tabNutrition": "NUTRITION",
   "tabShopping": "SHOPPING",
+  "adPrivacyOptions": "Privacy options",
   "shoppingListTitle": "Shopping List",
   "noShoppingList": "No shopping list",
   "noShoppingListDesc": "Generate a diet first from the Nutrition tab to see your shopping list.",

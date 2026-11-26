@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'l10n/app_localizations.dart';
@@ -9,12 +11,12 @@ import 'widgets/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AdService.instance.initialize();
-  AdService.instance.loadInterstitial();
-  AdService.instance.loadAppOpenAd();
   final prefs = await SharedPreferences.getInstance();
   final onboardingDone = prefs.getBool('onboarding_complete') ?? false;
   runApp(MyApp(showOnboarding: !onboardingDone));
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(AdService.instance.initialize());
+  });
 }
 
 class MyApp extends StatelessWidget {

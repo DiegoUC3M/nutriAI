@@ -20,6 +20,7 @@
 
   "tabNutrition": "NUTRICIÓN",
   "tabShopping": "COMPRA",
+  "adPrivacyOptions": "Opciones de privacidad",
   "shoppingListTitle": "Lista de la compra",
   "noShoppingList": "Sin lista de compra",
   "noShoppingListDesc": "Genera una dieta primero desde la pestaña de Nutrición para ver tu lista de la compra.",

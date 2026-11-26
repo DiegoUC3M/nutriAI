@@ -22,20 +22,41 @@ class _MainShellState extends State<MainShell> {
   @override
   void initState() {
     super.initState();
-    _bannerAd = AdService.instance.createBannerAd(
-      onLoaded: () => setState(() => _isBannerReady = true),
+    AdService.instance.addListener(_adsChanged);
+    _loadBanner();
+  }
+
+  void _adsChanged() {
+    _bannerAd?.dispose();
+    _bannerAd = null;
+    _isBannerReady = false;
+    _loadBanner();
+    setState(() {});
+  }
+
+  void _loadBanner() {
+    late final BannerAd? banner;
+    banner = AdService.instance.createBannerAd(
+      onLoaded: () {
+        if (mounted && _bannerAd == banner) {
+          setState(() => _isBannerReady = true);
+        }
+      },
     );
-    _bannerAd?.load();
+    _bannerAd = banner;
+    banner?.load();
   }
 
   @override
   void dispose() {
+    AdService.instance.removeListener(_adsChanged);
     _bannerAd?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: IndexedStack(
         index: _currentTab,
@@ -50,6 +71,11 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (AdService.instance.privacyOptionsRequired)
+            TextButton(
+              onPressed: AdService.instance.showPrivacyOptions,
+              child: Text(l10n.adPrivacyOptions),
+            ),
           if (_isBannerReady && _bannerAd != null)
             Container(
               color: AppColors.background,
@@ -69,11 +95,11 @@ class _MainShellState extends State<MainShell> {
               items: [
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.restaurant_menu),
-                  label: AppLocalizations.of(context)!.tabNutrition,
+                  label: l10n.tabNutrition,
                 ),
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.shopping_cart_outlined),
-                  label: AppLocalizations.of(context)!.tabShopping,
+                  label: l10n.tabShopping,
                 ),
               ],
             ),

@@ -65,6 +65,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tabShopping => 'COMPRA';
 
   @override
+  String get adPrivacyOptions => 'Opciones de privacidad';
+
+  @override
   String get shoppingListTitle => 'Lista de la compra';
 
   @override

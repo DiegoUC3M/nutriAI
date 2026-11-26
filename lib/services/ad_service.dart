@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 /// Servicio centralizado para gestionar anuncios de AdMob.
 /// Google Mobile Ads solo se admite en Android e iOS.
-class AdService {
+class AdService extends ChangeNotifier {
   AdService._();
   static final instance = AdService._();
 
@@ -60,20 +62,88 @@ class AdService {
 
   InterstitialAd? _interstitialAd;
   AppOpenAd? _appOpenAd;
-  bool get isInterstitialAdReady => _adsSupported && _interstitialAd != null;
-  bool get isAppOpenAdReady => _adsSupported && _appOpenAd != null;
+  Future<void>? _startup;
+  bool _mobileAdsInitialized = false;
+  bool _privacyOptionsRequired = false;
+  bool _showingPrivacyOptions = false;
+  Object? _adSession;
+
+  bool get _canLoadAds => _adsSupported && _adSession != null;
+  bool get privacyOptionsRequired => _adsSupported && _privacyOptionsRequired;
+  bool get isInterstitialAdReady => _canLoadAds && _interstitialAd != null;
+  bool get isAppOpenAdReady => _canLoadAds && _appOpenAd != null;
 
   // ── Inicialización ──
 
   Future<void> initialize() async {
     if (!_adsSupported) return;
-    await MobileAds.instance.initialize();
+    await (_startup ??= _gatherConsent());
+  }
+
+  Future<void> _gatherConsent() async {
+    final updated = Completer<bool>();
+    ConsentInformation.instance.requestConsentInfoUpdate(
+      ConsentRequestParameters(),
+      () => updated.complete(true),
+      (_) => updated.complete(false),
+    );
+    if (await updated.future) {
+      await ConsentForm.loadAndShowConsentFormIfRequired((_) {});
+    }
+    await _refreshAdEligibility();
+  }
+
+  Future<void> _refreshAdEligibility() async {
+    final consent = ConsentInformation.instance;
+    try {
+      _privacyOptionsRequired =
+          await consent.getPrivacyOptionsRequirementStatus() ==
+          PrivacyOptionsRequirementStatus.required;
+    } catch (error) {
+      debugPrint('Could not check ad privacy options: $error');
+    }
+    try {
+      if (await consent.canRequestAds()) {
+        if (!_mobileAdsInitialized) {
+          await MobileAds.instance.initialize();
+          _mobileAdsInitialized = true;
+        }
+        _adSession = Object();
+        loadInterstitial();
+        loadAppOpenAd();
+      }
+    } catch (error) {
+      _stopLoadingAds();
+      debugPrint('Could not start ads: $error');
+    }
+    notifyListeners();
+  }
+
+  Future<void> showPrivacyOptions() async {
+    if (!privacyOptionsRequired || _showingPrivacyOptions) return;
+    _showingPrivacyOptions = true;
+    _stopLoadingAds();
+    notifyListeners();
+    try {
+      await ConsentForm.showPrivacyOptionsForm((_) {});
+    } finally {
+      await _refreshAdEligibility();
+      _showingPrivacyOptions = false;
+    }
+  }
+
+  void _stopLoadingAds() {
+    _adSession = null;
+    _interstitialAd?.dispose();
+    _interstitialAd = null;
+    _appOpenAd?.dispose();
+    _appOpenAd = null;
   }
 
   // ── Banner ──
 
   BannerAd? createBannerAd({required void Function() onLoaded}) {
-    if (!_adsSupported) return null;
+    if (!_canLoadAds) return null;
     return BannerAd(
       adUnitId: bannerAdUnitId,
       size: AdSize.banner,
@@ -91,12 +161,17 @@ class AdService {
   // ── Interstitial ──
 
   void loadInterstitial() {
-    if (!_adsSupported) return;
+    if (!_canLoadAds) return;
+    final session = _adSession;
     InterstitialAd.load(
       adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          if (session != _adSession) {
+            ad.dispose();
+            return;
+          }
           _interstitialAd = ad;
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
@@ -113,6 +188,7 @@ class AdService {
           );
         },
         onAdFailedToLoad: (error) {
+          if (session != _adSession) return;
           debugPrint('Interstitial ad failed to load: $error');
           _interstitialAd = null;
         },
@@ -200,15 +276,21 @@ class AdService {
   // ── App Open Ad ──
 
   void loadAppOpenAd() {
-    if (!_adsSupported) return;
+    if (!_canLoadAds) return;
+    final session = _adSession;
     AppOpenAd.load(
       adUnitId: appOpenAdUnitId,
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {
+          if (session != _adSession) {
+            ad.dispose();
+            return;
+          }
           _appOpenAd = ad;
         },
         onAdFailedToLoad: (error) {
+          if (session != _adSession) return;
           debugPrint('App Open Ad failed to load: $error');
           _appOpenAd = null;
         },
