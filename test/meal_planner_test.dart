@@ -115,6 +115,18 @@ void main() {
     expect(day.totalFat, closeTo(30, 5));
   });
 
+  test('A supplement can fit better in a meal with a smaller calorie gap', () {
+    final day = MealPlanner.generate(
+      _config(150, 90, 30, mealsPerDay: 6),
+      random: Random(21),
+    ).single;
+    final lunch = day.meals.singleWhere((meal) => meal.name == 'Almuerzo');
+    expect(lunch.items.any((item) => item.name.startsWith('Gambas ')), isTrue);
+    expect(day.totalProtein, closeTo(150, 3));
+    expect(day.totalCarbs, closeTo(90, 3));
+    expect(day.totalFat, closeTo(30, 3));
+  });
+
   test('MealPlanner.generate produces valid diet', () {
     final config = MealPlanConfig(
       targetProtein: 150.0,

@@ -437,50 +437,57 @@ class MealPlanner {
       var bestMeal = -1;
       var bestGain = 0.0;
       List<int>? bestAdjustedSteps;
+      availableMeals.sort((a, b) {
+        final aGap = config.targetCalories * slots[a].calorieFraction -
+            remaining[budgets[a].index];
+        final bGap = config.targetCalories * slots[b].calorieFraction -
+            remaining[budgets[b].index];
+        final byGap = bGap.compareTo(aGap);
+        return byGap == 0 ? a.compareTo(b) : byGap;
+      });
       for (final food in pool) {
-        final meal = _mealForExtra(food, meals, slots, availableMeals, pool, config);
-        if (meal == null) continue;
-        final candidate = _Portion(
-          food, 0, optional: true,
-          maxGrams: slots[meal].type == _MealType.snack ? food.defaultServingG : null,
-        );
-        candidate.budget = budgets[meal];
-        if (hasExcess) {
-          final trial = [...remaining];
+        for (final meal in availableMeals) {
+          final type = slots[meal].type;
+          if (!_canSupplement(food, type, pool) ||
+              meals[meal].any((portion) => portion.food == food)) {
+            continue;
+          }
+          final candidate = _Portion(
+            food, 0, optional: true,
+            maxGrams: type == _MealType.snack ? food.defaultServingG : null,
+          )..budget = budgets[meal];
           final maxSteps = _mealStepLimits(candidate, remaining).$2;
           if (maxSteps < candidate.minServingSteps) continue;
-          candidate.steps = (food.defaultServingG / _Portion.stepGrams)
-              .round()
-              .clamp(candidate.minServingSteps, maxSteps);
+          final trial = [...remaining];
+          if (hasExcess) {
+            candidate.steps = (food.defaultServingG / _Portion.stepGrams)
+                .round()
+                .clamp(candidate.minServingSteps, maxSteps);
+          } else {
+            candidate.steps = _bestChange(candidate, remaining);
+          }
           _subtractSteps(trial, candidate, candidate.steps);
-          _fitPortions([...portions, candidate], trial, maxPasses: 16);
+          if (hasExcess) {
+            _fitPortions([...portions, candidate], trial, maxPasses: 16);
+          }
           final gain = _squaredError(remaining) - _squaredError(trial);
+          final winsTie = best?.food != food && config.favorites.contains(food.name);
           if (candidate.steps > 0 && gain > 0 &&
-              (gain > bestGain ||
-                  gain == bestGain && config.favorites.contains(food.name))) {
+              (gain > bestGain || gain == bestGain && winsTie)) {
             best = candidate;
             bestSteps = candidate.steps;
             bestMeal = meal;
             bestGain = gain;
-            bestAdjustedSteps = [for (final portion in portions) portion.steps];
+            if (hasExcess) {
+              bestAdjustedSteps = [for (final portion in portions) portion.steps];
+            }
           }
-          for (var i = 0; i < portions.length; i++) {
-            portions[i].steps = originalSteps[i];
+          if (hasExcess) {
+            for (var i = 0; i < portions.length; i++) {
+              portions[i].steps = originalSteps[i];
+            }
           }
-          continue;
         }
-        final steps = _bestChange(candidate, remaining);
-        var gain = 0.0;
-        for (var i = 0; i < candidate.perStep.length; i++) {
-          final delta = candidate.perStep[i] * steps;
-          gain += delta * (2 * remaining[i] - delta);
-        }
-        if (gain < bestGain || gain <= 0) continue;
-        if (gain == bestGain && !config.favorites.contains(food.name)) continue;
-        best = candidate;
-        bestSteps = steps;
-        bestMeal = meal;
-        bestGain = gain;
       }
       if (best == null) break;
       if (bestAdjustedSteps != null) {
@@ -497,30 +504,6 @@ class MealPlanner {
       portions.add(best);
       _fitPortions(portions, remaining);
     }
-  }
-
-  static int? _mealForExtra(
-    FoodItem food,
-    List<List<_Portion>> meals,
-    List<_MealSlot> slots,
-    List<int> availableMeals,
-    List<FoodItem> pool,
-    MealPlanConfig config,
-  ) {
-    int? bestMeal;
-    var largestGap = double.negativeInfinity;
-    for (final i in availableMeals) {
-      if (!_canSupplement(food, slots[i].type, pool)) continue;
-      if (meals[i].any((portion) => portion.food == food)) continue;
-      final calories = meals[i].fold(0, (sum, portion) =>
-          sum + portion.food.caloriesForGrams(portion.grams));
-      final gap = config.targetCalories * slots[i].calorieFraction - calories;
-      if (gap > largestGap) {
-        bestMeal = i;
-        largestGap = gap;
-      }
-    }
-    return bestMeal;
   }
 
   static bool _canSupplement(FoodItem food, _MealType type, List<FoodItem> pool) {
