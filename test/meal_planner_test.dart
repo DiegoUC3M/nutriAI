@@ -1,9 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/data/food_database.dart';
 import 'package:gym_app/utils/meal_planner.dart';
 
 void main() {
-  test('Adjusted dinner macros match the rounded portion', () {
+  test('Fitted dinner nutrients match the rounded portion', () {
     final egg = foodByName['Huevos']!;
     final config = MealPlanConfig(
       targetProtein: 150,
@@ -21,10 +23,108 @@ void main() {
     );
 
     final dinner = MealPlanner.generate(config).single.meals.last.items.single;
-    expect(dinner.grams, 320);
-    expect(dinner.carbs, closeTo(egg.carbsForGrams(320), 0.0001));
-    expect(dinner.protein, closeTo(egg.proteinForGrams(320), 0.0001));
-    expect(dinner.fat, closeTo(egg.fatForGrams(320), 0.0001));
+    expect(dinner.grams % 5, 0);
+    expect(dinner.carbs, closeTo(egg.carbsForGrams(dinner.grams), 0.0001));
+    expect(dinner.protein, closeTo(egg.proteinForGrams(dinner.grams), 0.0001));
+    expect(dinner.fat, closeTo(egg.fatForGrams(dinner.grams), 0.0001));
+    expect(dinner.calories, egg.caloriesForGrams(dinner.grams));
+  });
+
+  test('Equal 1500 kcal targets produce different macro distributions', () {
+    const allowed = {'Pavo', 'Arroz', 'Aceite de oliva'};
+    final disliked = foodDatabase
+        .map((food) => food.name)
+        .toSet()
+        .difference(allowed);
+    final moderate = _config(150, 135, 40, disliked: disliked);
+    final high = _config(300, 30, 20, disliked: disliked);
+    expect(moderate.targetCalories, 1500);
+    expect(high.targetCalories, 1500);
+
+    final moderateDay = MealPlanner.generate(moderate).single;
+    final highDay = MealPlanner.generate(high).single;
+    for (final (day, target) in [(moderateDay, moderate), (highDay, high)]) {
+      expect(day.totalProtein, closeTo(target.targetProtein, 10));
+      expect(day.totalCarbs, closeTo(target.targetCarbs, 10));
+      expect(day.totalFat, closeTo(target.targetFat, 5));
+    }
+    expect(highDay.totalProtein - moderateDay.totalProtein, greaterThan(120));
+    expect(moderateDay.totalCarbs - highDay.totalCarbs, greaterThan(85));
+  });
+
+  test('Daily fitting keeps the 1230 kcal plan within 3 percent', () {
+    final config = _config(150, 90, 30);
+    expect(config.targetCalories, 1230);
+    for (final seed in [0, 1, 2, 3, 4]) {
+      final day = MealPlanner.generate(config, random: Random(seed)).single;
+      expect(
+        day.totalCalories,
+        closeTo(1230, 1230 * 0.03),
+        reason: 'seed $seed',
+      );
+    }
+  });
+
+  test('Daily fitting corrects fat overshoot without a macro deficit', () {
+    final day = MealPlanner.generate(
+      _config(150, 90, 30),
+      random: Random(46),
+    ).single;
+    expect(day.totalFat, closeTo(30, 5));
+    expect(day.totalProtein, closeTo(150, 5));
+    expect(day.totalCarbs, closeTo(90, 5));
+  });
+
+  test('Daily fitting keeps the apple snack near its calorie share', () {
+    final day = MealPlanner.generate(
+      _config(150, 90, 30, mealsPerDay: 4),
+      random: Random(58),
+    ).single;
+    final snack = day.meals.singleWhere((meal) => meal.name == 'Merienda');
+    expect(snack.items.any((item) => item.name.startsWith('Manzana ')), isTrue);
+    expect(snack.totalCalories, inInclusiveRange(78, 168));
+  });
+
+  test('Supplemental snack foods are suitable and snack-sized', () {
+    final day = MealPlanner.generate(
+      _config(300, 30, 20, mealsPerDay: 4),
+      random: Random(0),
+    ).single;
+    final snack = day.meals.singleWhere((meal) => meal.name == 'Merienda');
+    expect(snack.items, isNotEmpty);
+    for (final item in snack.items) {
+      final food = foodByName[item.name.split(' (').first]!;
+      expect(
+        food.category,
+        isIn([FoodCategory.fruit, FoodCategory.dairy, FoodCategory.fat]),
+        reason: item.name,
+      );
+      expect(item.grams, lessThanOrEqualTo(food.defaultServingG));
+    }
+  });
+
+  test('Oil-only snacks do not force the six-meal plan over its fat target', () {
+    final disliked = foodDatabase
+        .map((food) => food.name)
+        .toSet()
+        .difference({'Pavo', 'Arroz', 'Aceite de oliva'});
+    final day = MealPlanner.generate(
+      _config(150, 150, 30, mealsPerDay: 6, disliked: disliked),
+      random: Random(0),
+    ).single;
+    expect(day.totalFat, closeTo(30, 5));
+  });
+
+  test('A supplement can fit better in a meal with a smaller calorie gap', () {
+    final day = MealPlanner.generate(
+      _config(150, 90, 30, mealsPerDay: 6),
+      random: Random(21),
+    ).single;
+    final lunch = day.meals.singleWhere((meal) => meal.name == 'Almuerzo');
+    expect(lunch.items.any((item) => item.name.startsWith('Gambas ')), isTrue);
+    expect(day.totalProtein, closeTo(150, 3));
+    expect(day.totalCarbs, closeTo(90, 3));
+    expect(day.totalFat, closeTo(30, 3));
   });
 
   test('MealPlanner.generate produces valid diet', () {
@@ -68,3 +168,21 @@ void main() {
     }
   });
 }
+
+MealPlanConfig _config(
+  double protein,
+  double carbs,
+  double fat, {
+  Set<String> disliked = const {},
+  int mealsPerDay = 3,
+}) => MealPlanConfig(
+  targetProtein: protein,
+  targetCarbs: carbs,
+  targetFat: fat,
+  days: 1,
+  mealsPerDay: mealsPerDay,
+  varietyLevel: 'medium',
+  favorites: {},
+  allergies: {},
+  disliked: disliked,
+);
