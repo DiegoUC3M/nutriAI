@@ -1,9 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_app/data/food_database.dart';
 import 'package:gym_app/utils/meal_planner.dart';
 
 void main() {
-  test('Adjusted dinner macros match the rounded portion', () {
+  test('Fitted dinner nutrients match the rounded portion', () {
     final egg = foodByName['Huevos']!;
     final config = MealPlanConfig(
       targetProtein: 150,
@@ -21,10 +23,46 @@ void main() {
     );
 
     final dinner = MealPlanner.generate(config).single.meals.last.items.single;
-    expect(dinner.grams, 320);
-    expect(dinner.carbs, closeTo(egg.carbsForGrams(320), 0.0001));
-    expect(dinner.protein, closeTo(egg.proteinForGrams(320), 0.0001));
-    expect(dinner.fat, closeTo(egg.fatForGrams(320), 0.0001));
+    expect(dinner.grams % 5, 0);
+    expect(dinner.carbs, closeTo(egg.carbsForGrams(dinner.grams), 0.0001));
+    expect(dinner.protein, closeTo(egg.proteinForGrams(dinner.grams), 0.0001));
+    expect(dinner.fat, closeTo(egg.fatForGrams(dinner.grams), 0.0001));
+    expect(dinner.calories, egg.caloriesForGrams(dinner.grams));
+  });
+
+  test('Equal 1500 kcal targets produce different macro distributions', () {
+    const allowed = {'Pavo', 'Arroz', 'Aceite de oliva'};
+    final disliked = foodDatabase
+        .map((food) => food.name)
+        .toSet()
+        .difference(allowed);
+    final moderate = _config(150, 135, 40, disliked: disliked);
+    final high = _config(300, 30, 20, disliked: disliked);
+    expect(moderate.targetCalories, 1500);
+    expect(high.targetCalories, 1500);
+
+    final moderateDay = MealPlanner.generate(moderate).single;
+    final highDay = MealPlanner.generate(high).single;
+    for (final (day, target) in [(moderateDay, moderate), (highDay, high)]) {
+      expect(day.totalProtein, closeTo(target.targetProtein, 10));
+      expect(day.totalCarbs, closeTo(target.targetCarbs, 10));
+      expect(day.totalFat, closeTo(target.targetFat, 5));
+    }
+    expect(highDay.totalProtein - moderateDay.totalProtein, greaterThan(120));
+    expect(moderateDay.totalCarbs - highDay.totalCarbs, greaterThan(85));
+  });
+
+  test('Daily fitting keeps the 1230 kcal plan within 3 percent', () {
+    final config = _config(150, 90, 30);
+    expect(config.targetCalories, 1230);
+    for (final seed in [0, 1, 2, 3, 4]) {
+      final day = MealPlanner.generate(config, random: Random(seed)).single;
+      expect(
+        day.totalCalories,
+        closeTo(1230, 1230 * 0.03),
+        reason: 'seed $seed',
+      );
+    }
   });
 
   test('MealPlanner.generate produces valid diet', () {
@@ -68,3 +106,20 @@ void main() {
     }
   });
 }
+
+MealPlanConfig _config(
+  double protein,
+  double carbs,
+  double fat, {
+  Set<String> disliked = const {},
+}) => MealPlanConfig(
+  targetProtein: protein,
+  targetCarbs: carbs,
+  targetFat: fat,
+  days: 1,
+  mealsPerDay: 3,
+  varietyLevel: 'medium',
+  favorites: {},
+  allergies: {},
+  disliked: disliked,
+);

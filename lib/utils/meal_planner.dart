@@ -72,6 +72,36 @@ class _MealSlot {
   const _MealSlot(this.name, this.calorieFraction, this.type);
 }
 
+class _Portion {
+  static const stepGrams = 5.0;
+  static const calorieWeight = 0.75;
+
+  final FoodItem food;
+  final List<double> perStep;
+  final bool optional;
+  final int maxSteps;
+  int steps;
+
+  _Portion(this.food, double grams, {this.optional = false})
+    : perStep = [
+        food.proteinForGrams(stepGrams) * 4,
+        food.carbsForGrams(stepGrams) * 4,
+        food.fatForGrams(stepGrams) * 9,
+        food.caloriesPer100g * (stepGrams / 100) * calorieWeight,
+      ],
+      maxSteps = switch (food.category) {
+        FoodCategory.fat => 12,
+        FoodCategory.protein => 70,
+        _ => 50,
+      },
+      steps = (grams / stepGrams).round() {
+    if (!optional) steps = steps.clamp(minServingSteps, maxSteps);
+  }
+
+  int get minServingSteps => food.category == FoodCategory.fat ? 1 : 4;
+  double get grams => steps * stepGrams;
+}
+
 // Métodos de cocción para dar variedad a los nombres
 const _cookingMethods = [
   'a la plancha',
@@ -119,8 +149,8 @@ const _breakfastProteins = {'Huevos', 'Pavo', 'Claras de huevo'};
 // ─── Generador principal ─────────────────────────────────────────
 
 class MealPlanner {
-  static List<DietDay> generate(MealPlanConfig config) {
-    final rng = Random();
+  static List<DietDay> generate(MealPlanConfig config, {Random? random}) {
+    final rng = random ?? Random();
     final slots = _slotConfigs[config.mealsPerDay] ?? _slotConfigs[5]!;
 
     // Filtrar pool de alimentos disponibles
@@ -147,15 +177,9 @@ class MealPlanner {
     final days = <DietDay>[];
 
     for (int d = 0; d < config.days; d++) {
-      final meals = <Meal>[];
+      final portionsByMeal = <List<_Portion>>[];
 
       for (final slot in slots) {
-        final mealTargetP = config.targetProtein * slot.calorieFraction;
-        final mealTargetC = config.targetCarbs * slot.calorieFraction;
-        final mealTargetF = config.targetFat * slot.calorieFraction;
-        final mealTargetCal =
-            (mealTargetP * 4 + mealTargetC * 4 + mealTargetF * 9);
-
         final selections = <(FoodItem, double)>[];
 
         switch (slot.type) {
@@ -178,14 +202,22 @@ class MealPlanner {
             );
         }
 
-        // Escalar porciones para ajustar a los macros del slot
-        final items = _scaleToTarget(selections, mealTargetCal, slot.type, rng);
-        meals.add(Meal(name: slot.name, items: items));
+        portionsByMeal.add(_initialPortions(
+          selections, config.targetCalories * slot.calorieFraction,
+        ));
       }
 
-      // Ajuste final: corregir desviación en la última comida
-      _adjustLastMeal(meals, config);
-
+      _fitDailyTargets(portionsByMeal, slots, pool, config);
+      final meals = [
+        for (var i = 0; i < slots.length; i++)
+          Meal(
+            name: slots[i].name,
+            items: [
+              for (final portion in portionsByMeal[i])
+                if (portion.steps > 0) _makeItem(portion, slots[i].type, rng),
+            ],
+          ),
+      ];
       days.add(DietDay(dayNumber: d + 1, meals: meals));
     }
 
@@ -318,41 +350,27 @@ class MealPlanner {
 
   // ─── Escalado de porciones ───────────────────────────────────
 
-  static List<MealItem> _scaleToTarget(
+  static List<_Portion> _initialPortions(
     List<(FoodItem, double)> selections,
     double targetCal,
-    _MealType type,
-    Random rng,
   ) {
-    if (selections.isEmpty) return [];
-
-    double currentCal = selections.fold(
+    final currentCal = selections.fold(
         0.0, (s, e) => s + e.$1.caloriesForGrams(e.$2));
+    final scale = (targetCal / max(currentCal, 1.0)).clamp(0.3, 3.0);
+    return [for (final (food, grams) in selections) _Portion(food, grams * scale)];
+  }
 
-    if (currentCal <= 0) currentCal = 1;
-
-    final scale = (targetCal / currentCal).clamp(0.3, 3.0);
-
-    return selections.map((entry) {
-      final food = entry.$1;
-      var grams = (entry.$2 * scale).clamp(
-        food.category == FoodCategory.fat ? 5.0 : 20.0,
-        food.category == FoodCategory.fat ? 60.0 : 250.0,
-      );
-      grams = (grams / 5).round() * 5.0; // Redondear a múltiplos de 5g
-
-      final name = _formatItemName(food, grams, type, rng);
-
-      // MealItem constructor: (name, carbs, protein, fat, calories)
-      return MealItem(
-        name,
-        food.carbsForGrams(grams),
-        food.proteinForGrams(grams),
-        food.fatForGrams(grams),
-        food.caloriesForGrams(grams),
-        grams: grams,
-      );
-    }).toList();
+  static MealItem _makeItem(_Portion portion, _MealType type, Random rng) {
+    final food = portion.food;
+    final grams = portion.grams;
+    return MealItem(
+      _formatItemName(food, grams, type, rng),
+      food.carbsForGrams(grams),
+      food.proteinForGrams(grams),
+      food.fatForGrams(grams),
+      food.caloriesForGrams(grams),
+      grams: grams,
+    );
   }
 
   static String _formatItemName(
@@ -368,37 +386,118 @@ class MealPlanner {
     return '${food.name} (${g}g)';
   }
 
-  // ─── Ajuste final del día ────────────────────────────────────
+  static void _fitDailyTargets(
+    List<List<_Portion>> meals,
+    List<_MealSlot> slots,
+    List<FoodItem> pool,
+    MealPlanConfig config,
+  ) {
+    // Use energy-equivalent macro errors, with a lower weight for database kcal.
+    final remaining = [
+      config.targetProtein * 4,
+      config.targetCarbs * 4,
+      config.targetFat * 9,
+      config.targetCalories * _Portion.calorieWeight,
+    ];
+    final portions = meals.expand((meal) => meal).toList();
+    for (final portion in portions) {
+      _subtractSteps(remaining, portion, portion.steps);
+    }
+    _fitPortions(portions, remaining);
 
-  static void _adjustLastMeal(List<Meal> meals, MealPlanConfig config) {
-    final currentCal = meals.fold(0, (s, m) => s + m.totalCalories);
-    final targetCal = config.targetCalories;
+    // If the chosen foods cannot supply a missing macro, add at most one
+    // portion per meal from the same allergy- and preference-filtered pool.
+    final availableMeals = List.generate(meals.length, (i) => i);
+    while (availableMeals.isNotEmpty &&
+        (remaining[0] > 20 || remaining[1] > 20 || remaining[2] > 45)) {
+      _Portion? best;
+      var bestSteps = 0;
+      var bestMeal = -1;
+      var bestGain = 0.0;
+      for (final food in pool) {
+        final candidate = _Portion(food, 0, optional: true);
+        final steps = _bestChange(candidate, remaining);
+        var gain = 0.0;
+        for (var i = 0; i < remaining.length; i++) {
+          final delta = candidate.perStep[i] * steps;
+          gain += delta * (2 * remaining[i] - delta);
+        }
+        if (gain < bestGain || gain <= 0) continue;
+        final meal = _mealForExtra(food, meals, slots, availableMeals, config);
+        if (meal == null) continue;
+        if (gain == bestGain && !config.favorites.contains(food.name)) continue;
+        best = candidate;
+        bestSteps = steps;
+        bestMeal = meal;
+        bestGain = gain;
+      }
+      if (best == null) break;
+      best.steps = bestSteps;
+      _subtractSteps(remaining, best, bestSteps);
+      meals[bestMeal].add(best);
+      availableMeals.remove(bestMeal);
+      portions.add(best);
+      _fitPortions(portions, remaining);
+    }
+  }
 
-    if (currentCal <= 0 || targetCal <= 0) return;
+  static int? _mealForExtra(
+    FoodItem food,
+    List<List<_Portion>> meals,
+    List<_MealSlot> slots,
+    List<int> availableMeals,
+    MealPlanConfig config,
+  ) {
+    int? bestMeal;
+    var largestGap = double.negativeInfinity;
+    for (final i in availableMeals) {
+      if (meals[i].any((portion) => portion.food == food)) continue;
+      final calories = meals[i].fold(0, (sum, portion) =>
+          sum + portion.food.caloriesForGrams(portion.grams));
+      final gap = config.targetCalories * slots[i].calorieFraction - calories;
+      if (gap > largestGap) {
+        bestMeal = i;
+        largestGap = gap;
+      }
+    }
+    return bestMeal;
+  }
 
-    final ratio = targetCal / currentCal;
+  static void _fitPortions(List<_Portion> portions, List<double> remaining) {
+    for (var pass = 0; pass < 60; pass++) {
+      var changed = false;
+      for (final portion in portions) {
+        final change = _bestChange(portion, remaining);
+        if (change == 0) continue;
+        portion.steps += change;
+        _subtractSteps(remaining, portion, change);
+        changed = true;
+      }
+      if (!changed) break;
+    }
+  }
 
-    // Solo ajustar si la desviación es >5%
-    if ((ratio - 1.0).abs() < 0.05) return;
+  static int _bestChange(_Portion portion, List<double> remaining) {
+    var dot = 0.0;
+    var square = 0.0;
+    for (var i = 0; i < remaining.length; i++) {
+      final step = portion.perStep[i];
+      dot += remaining[i] * step;
+      square += step * step;
+    }
+    if (square == 0) return 0;
+    final idealSteps = portion.steps + dot / square;
+    if (portion.optional && idealSteps <= portion.minServingSteps / 2) {
+      return -portion.steps;
+    }
+    return idealSteps.round().clamp(portion.minServingSteps, portion.maxSteps) -
+        portion.steps;
+  }
 
-    // Reconstruir la última comida con porciones ajustadas
-    final lastMeal = meals.last;
-    final adjustedItems = lastMeal.items.map((item) {
-      final adjustFactor = ratio.clamp(0.7, 1.4);
-      final newGrams = ((item.grams * adjustFactor) / 5).round() * 5.0;
-      final portionRatio = newGrams / item.grams;
-      final newCarbs = item.carbs * portionRatio;
-      final newProtein = item.protein * portionRatio;
-      final newFat = item.fat * portionRatio;
-      final newCal = (newProtein * 4 + newCarbs * 4 + newFat * 9).round();
-      final newName = item.name.replaceFirstMapped(
-        RegExp(r'\((\d+)g\)'),
-        (m) => '(${newGrams.round()}g)',
-      );
-      return MealItem(newName, newCarbs, newProtein, newFat, newCal, grams: newGrams);
-    }).toList();
-
-    meals[meals.length - 1] = Meal(name: lastMeal.name, items: adjustedItems);
+  static void _subtractSteps(List<double> remaining, _Portion portion, int steps) {
+    for (var i = 0; i < remaining.length; i++) {
+      remaining[i] -= portion.perStep[i] * steps;
+    }
   }
 
   // ─── Selección con peso (favoritos) y variedad ───────────────
